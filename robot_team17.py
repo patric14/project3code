@@ -33,10 +33,11 @@ import grovepi
 from MPU9250 import MPU9250
 from math import pi
 import time
+import numpy as np
 
 # Object Creation
 BP = brickpi3.BrickPi3()
-mpu9250 = MPU9250()
+'''mpu9250 = MPU9250()'''
 
 # Library class
 class RobotLibrary(object):
@@ -71,10 +72,24 @@ class RobotLibrary(object):
     LEFT = 0
     RIGHT = 1
     STRAIGHT = 2
+    BIOHAZARD_COLOR = 'Biohazard' # Yellow
+    NONHAZARD_COLOR = 'Nonhazardous' # Blues
+    HAZARD_THRESHOLD = 2700
     DIST_DEG = (2 * pi * WHEEL_RADIUS) / 360
     wheel_track_ratio = TRACK_SEPARATION / WHEEL_RADIUS
     NINETY_TURN = 460
     DEG_TURN = NINETY_TURN / 90
+    
+    # Junction types
+    JUNCT_DEAD_END = 0
+    JUNCT_STRAIGHT = 1
+    JUNCT_LEFT = 10
+    JUNCT_RIGHT = 100
+    JUNCT_LEFT_RIGHT = 110
+    JUNCT_LEFT_STRAIGHT = 11
+    JUNCT_RIGHT_STRAIGHT = 101
+    JUNCT_ALL_WAY = 111
+    
 
     # Sensor setup
     BP.set_sensor_type(BUTTON, BP.SENSOR_TYPE.TOUCH)
@@ -98,6 +113,13 @@ class RobotLibrary(object):
         notes = input('Notes: ')
 
         return map_number, unit_length, unit, origin, notes
+    
+    def mapSetup(xSize, ySize):
+        
+        # This function sets up the map matrix
+        
+        mapMatrix = np.zeros(xSize, ySize)
+        return mapMatrix
 
     def button(self):
 
@@ -115,27 +137,15 @@ class RobotLibrary(object):
                 
     def scanner(self):
         
-        # This function uses the light sensor to 
-
-    '''def travel_distance(self, dist, rad, speed):
-
-        print('Traveling distance ', dist)
-
-        # This function allows the user to input the distance to travel, the wheel
-        # radius, and the motor speed and drives the robot the set distance.
-
-        # Determines distance in each degree
-        dist_deg = (pi * rad * 2) / rad
-        # Determines how many degrees are in the distance desired
-        deg_travel = dist / dist_deg
-        # Determines how long to run motors
-        timer = deg_travel / speed
-
-        BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR, speed)
-        time.sleep(timer)
-        BP.set_motor_dps(self.LEFT_MOTOR, 0)
-        BP.set_motor_dps(self.RIGHT_MOTOR, 0)'''
-
+        # This function uses the light sensor to determine which type of waste
+        # it is looking at
+        
+        scan = BP.get_sensor(self.LIGHT)
+        if scan < self.HAZARD_THRESHOLD:
+            return self.BIOHAZARD_COLOR
+        else:    
+            return self.NONHAZARD_COLOR
+        
     def drive(self, speed):
         BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR, -1 * speed)
 
@@ -153,7 +163,7 @@ class RobotLibrary(object):
     def drive_dist(self, distance, speed):
 
         # This function drives the robot at the input speed for the input
-        # next
+        # distnace
 
         print('Traveling distance ', distance)
 
@@ -167,8 +177,8 @@ class RobotLibrary(object):
 
     def turn(self, direction, degrees, speed):
 
-        # This function turns the robot the input number of degrees. It also takes
-        # a wheel radius and speed input.
+        # This function turns the robot the input number of degrees. It also 
+        # takes a wheel radius and speed input.
 
         print('Turning ', degrees, ' degrees.')
         init_deg = BP.get_motor_encoder(self.LEFT_MOTOR)
@@ -184,7 +194,8 @@ class RobotLibrary(object):
         while deg_traveled < max_deg:
             BP.set_motor_dps(self.LEFT_MOTOR, left_speed)
             BP.set_motor_dps(self.RIGHT_MOTOR, right_speed)
-            deg_traveled = abs(BP.get_motor_encoder(self.LEFT_MOTOR) - init_deg)
+            deg_traveled = abs(BP.get_motor_encoder(self.LEFT_MOTOR) - \
+                               init_deg)
         self.stop()
 
     def turn_ultrasonic(self, direction):
@@ -217,84 +228,29 @@ class RobotLibrary(object):
         # brickpi ultrasonic sensor and returns the distances
 
         print('Determining junction type')
-
+        
+        forwardDist = self.check_distance()
+        self.turn_ultrasonic(self.LEFT)
         leftDist = self.check_distance()
         self.turn_ultrasonic(self.RIGHT)
-        forwardDist = self.check_distance()
         self.turn_ultrasonic(self.RIGHT)
         rightDist = self.check_distance()
         self.turn_ultrasonic(self.LEFT)
-        self.turn_ultrasonic(self.LEFT)
-
+        
+        numJunction = 0
+        typeJunction = self.JUNCT_DEAD_END
+        
         if forwardDist > unit:
-            junction = self.STRAIGHT
-            print('Straight')
-        elif leftDist > unit:
-            junction = self.LEFT
-            print('Left')
-        elif rightDist > unit:
-            junction = self.RIGHT
-            print('Right')
-        else:
-            junction = self.check_junction(unit)
+            numJunction = numJunction + 1
+            typeJunction = self.JUNCT_STRAIGHT + typeJunction
+        if leftDist > unit:
+            numJunction = numJunction + 1
+            typeJunction = self.JUNCT_LEFT + typeJunction
+        if rightDist > unit:
+            numJunction = numJunction + 1
+            typeJunction = self.JUNCT_RIGHT + typeJunction
 
-        return junction
-
-    '''def hall_nav(speed, target_pos, KP, KI, KD, dT):
-
-        current_pos = target_pos
-
-        P = 0
-        I = 0
-        D = 0
-        e_prev = 0
-        # --------------------------------
-        # ---------------------------------------------------------
-        # Control loop -- run infinately until a keyboard interrupt
-        # ---------------------------------------------------------
-        while True:
-            sig = BP.get_sensor(BP.PORT_1)
-            # get current position
-            current_pos = BP.get_motor_encoder(BP.PORT_A)
-            # print("current position: " + str(current_pos) )
-            e = target_pos - current_pos  # error
-            print("error is" + str(e))
-
-            # set up P,I,D, terms for control inputs
-            P = KP * e
-            I += KI * e * dT / 2
-            D = KD * (e - e_prev) / dT
-
-            # print("D" + str(D))
-            if sig == 1:
-                # control input for motor
-                power_in = P + I + D
-                BP.set_motor_power(BP.PORT_A, power_in)
-                # save error for this step; needed for D
-                e_prev = e
-            else:
-                BP.set_motor_power(BP.PORT_A, BP.MOTOR_FLOAT)
-            time.sleep(dT)'''
-
-    def hall_nav(self, speed, threshold):
-
-        # This function will drive the robot straight until a turn is reached,
-        # then turn the robot.
-
-        button_press = BP.get_sensor(self.FRONT_TOUCH)
-        dist = self.check_dist()
-        low_dist = threshold - 2
-        high_dist = threshold + 2
-
-        if button_press == 1:
-            self.drive(-speed)
-            time.sleep(1)
-            if dist > high_dist:
-                self.turn(self.LEFT, 90, speed)
-            elif dist <= high_dist:
-                self.turn(self.RIGHT, 90, speed)
-        else:
-            self.drive(speed)
+        return numJunction, typeJunction
 
     def map_output(self, map_number, unit_length, unit, origin, notes):
 
@@ -309,8 +265,8 @@ class RobotLibrary(object):
 
     def kill(self):
 
-        # This function resets all motors and sensors. It should only be used at
-        # the end of the code, or as the result of a keyboard interrupt.
+        # This function resets all motors and sensors. It should only be used 
+        # at the end of the code, or as the result of a keyboard interrupt.
         # THIS FUNCTION WILL BREAK CODE IF YOU USE IT IN THE MIDDLE.
 
         print('Killing robot.')
