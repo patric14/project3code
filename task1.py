@@ -38,17 +38,22 @@ try:
     block_size = robot.getval('Block Size: ')
     #time_limit = robot.getval('Time limit: ')
     speed = robot.getval('Input speed: ')
+    dist = block_size + 1
 
     while True:
 
+        while dist > block_size:
+            dist = robot.check_distance()
+            robot.drive(speed)
+        robot.stop()
+        robot.drive_dist(block_size / 2, speed)
+        
         junction = robot.check_junction(block_size)
 
-        if junction == robot.LEFT:
+        if junction == robot.JUNCT_LEFT:
             robot.turn(robot.LEFT, 90, speed)
-        elif junction == robot.RIGHT:
+        elif junction == robot.JUNCT_RIGHT:
             robot.turn(robot.RIGHT, 90, speed)
-
-        robot.drive_dist(block_size / 2, speed)
 
 except KeyboardInterrupt:
     pass
