@@ -1,0 +1,318 @@
+# Project 3
+# File: robot_team17.py
+# Date: 2018
+# By: Abby Beard
+# beard29
+# Caleb Patrick
+# patric14
+# Haydn Schroader
+# hschroad
+# Zach McClary
+# zmcclary
+# Section: 1
+#
+# Team: Team Number #
+# ELECTRONIC SIGNATURE
+# Abby Beard
+# Caleb Patrick
+# Haydn Schroader
+# Zach McClary
+#
+# The electronic signatures above indicate that the program
+# submitted for evaluation is the combined effort of all
+# team members and that each member of the team was an
+# equal participant in its creation. In addition, each
+# member of the team has a general understanding of
+# all aspects of the program development and execution.
+#
+# Description
+
+# Imports
+import brickpi3
+import grovepi
+from MPU9250 import MPU9250
+from math import pi
+import time
+
+# Object Creation
+BP = brickpi3.BrickPi3()
+mpu9250 = MPU9250()
+
+# Library class
+class RobotLibrary(object):
+
+    # Constants
+
+    TEAM = 17
+
+    # Mapping Constants
+    PATH = 1
+    NOT_PATH = 0
+    ORIGIN = 10
+    BIOHAZARD = 2
+    NONHAZARDOUS_WASTE = 3
+    RADIATION = 4
+    MRI = 5
+    START = 6
+    EXIT = 7
+
+    # Robot hardware constants
+    LEFT_MOTOR = BP.PORT_D
+    RIGHT_MOTOR = BP.PORT_A
+    ULTRASONIC_MOTOR = BP.PORT_B
+    BUTTON = BP.PORT_1
+    LIGHT = BP.PORT_2
+    WHEEL_RADIUS = 1.8
+    TRACK_SEPARATION = 18
+    ULTRASONIC = 2
+    ULTRASONIC_RIGHT = 125
+
+    # Other Constants
+    LEFT = 0
+    RIGHT = 1
+    STRAIGHT = 2
+    DIST_DEG = (2 * pi * WHEEL_RADIUS) / 360
+    wheel_track_ratio = TRACK_SEPARATION / WHEEL_RADIUS
+    NINETY_TURN = 460
+    DEG_TURN = NINETY_TURN / 90
+
+    # Sensor setup
+    BP.set_sensor_type(BUTTON, BP.SENSOR_TYPE.TOUCH)
+    BP.set_sensor_type(LIGHT, BP.SENSOR_TYPE.NXT_LIGHT_ON)
+
+    # Functions
+
+    def getval(self, string):
+        val = float(input(string))
+        return val
+
+    def setup(self):
+        # This function sets up all the bad bois
+
+        origin = []
+        map_number = self.getval('Input map: ')
+        unit_length = self.getval('Input unit length: ')
+        unit = input('Input unit: ')
+        origin.append(self.getval('Input x origin coordinate: '))
+        origin.append(self.getval('Input y origin coordinate: '))
+        notes = input('Notes: ')
+
+        return map_number, unit_length, unit, origin, notes
+
+    def button(self):
+
+        # This function waits for the touch sensor to be pressed before the
+        # next code section is executed.
+
+        trigger = 0
+        print('Press touch sensor to start')
+
+        while trigger == 0:
+            try:
+                trigger = BP.get_sensor(self.BUTTON)
+            except brickpi3.SensorError as error:
+                print(error)
+                
+    def scanner(self):
+        
+        # This function uses the light sensor to 
+
+    '''def travel_distance(self, dist, rad, speed):
+
+        print('Traveling distance ', dist)
+
+        # This function allows the user to input the distance to travel, the wheel
+        # radius, and the motor speed and drives the robot the set distance.
+
+        # Determines distance in each degree
+        dist_deg = (pi * rad * 2) / rad
+        # Determines how many degrees are in the distance desired
+        deg_travel = dist / dist_deg
+        # Determines how long to run motors
+        timer = deg_travel / speed
+
+        BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR, speed)
+        time.sleep(timer)
+        BP.set_motor_dps(self.LEFT_MOTOR, 0)
+        BP.set_motor_dps(self.RIGHT_MOTOR, 0)'''
+
+    def drive(self, speed):
+        BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR, -1 * speed)
+
+    def stop(self):
+        BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
+                         self.ULTRASONIC_MOTOR, 0)
+
+    def dist_deg_calculator(self, distance):
+        init_deg = BP.get_motor_encoder(self.LEFT_MOTOR)
+        max_deg = distance / self.DIST_DEG
+        deg_traveled = 0
+
+        return init_deg, max_deg, deg_traveled
+
+    def drive_dist(self, distance, speed):
+
+        # This function drives the robot at the input speed for the input
+        # next
+
+        print('Traveling distance ', distance)
+
+        init_deg, max_deg, deg_traveled = self.dist_deg_calculator(distance)
+
+        while deg_traveled < max_deg:
+            self.drive(speed)
+            deg_traveled = abs(BP.get_motor_encoder(self.LEFT_MOTOR) - \
+                               init_deg)
+        self.stop()
+
+    def turn(self, direction, degrees, speed):
+
+        # This function turns the robot the input number of degrees. It also takes
+        # a wheel radius and speed input.
+
+        print('Turning ', degrees, ' degrees.')
+        init_deg = BP.get_motor_encoder(self.LEFT_MOTOR)
+        max_deg = degrees * self.DEG_TURN
+        deg_traveled = 0
+
+        if direction == 0:
+            left_speed = speed
+            right_speed = -speed
+        else:
+            left_speed = -speed
+            right_speed = speed
+        while deg_traveled < max_deg:
+            BP.set_motor_dps(self.LEFT_MOTOR, left_speed)
+            BP.set_motor_dps(self.RIGHT_MOTOR, right_speed)
+            deg_traveled = abs(BP.get_motor_encoder(self.LEFT_MOTOR) - init_deg)
+        self.stop()
+
+    def turn_ultrasonic(self, direction):
+
+        print('Rotating Ultrasonic.')
+
+        if direction == self.LEFT:
+            power = 50
+        elif direction == self.RIGHT:
+            power = -50
+
+        init = BP.get_motor_encoder(self.ULTRASONIC_MOTOR)
+        diff = 0
+
+        while diff < self.ULTRASONIC_RIGHT:
+            BP.set_motor_power(self.ULTRASONIC_MOTOR, power)
+            diff = abs(BP.get_motor_encoder(self.ULTRASONIC_MOTOR) - init)
+            time.sleep(.01)
+
+        self.stop()
+
+    def check_distance(self):
+        dist = grovepi.ultrasonicRead(self.ULTRASONIC)
+        print('Distance: ', dist)
+        return dist
+
+    def check_junction(self, unit):
+
+        # This function checks the front, left, and right distance on the
+        # brickpi ultrasonic sensor and returns the distances
+
+        print('Determining junction type')
+
+        leftDist = self.check_distance()
+        self.turn_ultrasonic(self.RIGHT)
+        forwardDist = self.check_distance()
+        self.turn_ultrasonic(self.RIGHT)
+        rightDist = self.check_distance()
+        self.turn_ultrasonic(self.LEFT)
+        self.turn_ultrasonic(self.LEFT)
+
+        if forwardDist > unit:
+            junction = self.STRAIGHT
+            print('Straight')
+        elif leftDist > unit:
+            junction = self.LEFT
+            print('Left')
+        elif rightDist > unit:
+            junction = self.RIGHT
+            print('Right')
+        else:
+            junction = self.check_junction(unit)
+
+        return junction
+
+    '''def hall_nav(speed, target_pos, KP, KI, KD, dT):
+
+        current_pos = target_pos
+
+        P = 0
+        I = 0
+        D = 0
+        e_prev = 0
+        # --------------------------------
+        # ---------------------------------------------------------
+        # Control loop -- run infinately until a keyboard interrupt
+        # ---------------------------------------------------------
+        while True:
+            sig = BP.get_sensor(BP.PORT_1)
+            # get current position
+            current_pos = BP.get_motor_encoder(BP.PORT_A)
+            # print("current position: " + str(current_pos) )
+            e = target_pos - current_pos  # error
+            print("error is" + str(e))
+
+            # set up P,I,D, terms for control inputs
+            P = KP * e
+            I += KI * e * dT / 2
+            D = KD * (e - e_prev) / dT
+
+            # print("D" + str(D))
+            if sig == 1:
+                # control input for motor
+                power_in = P + I + D
+                BP.set_motor_power(BP.PORT_A, power_in)
+                # save error for this step; needed for D
+                e_prev = e
+            else:
+                BP.set_motor_power(BP.PORT_A, BP.MOTOR_FLOAT)
+            time.sleep(dT)'''
+
+    def hall_nav(self, speed, threshold):
+
+        # This function will drive the robot straight until a turn is reached,
+        # then turn the robot.
+
+        button_press = BP.get_sensor(self.FRONT_TOUCH)
+        dist = self.check_dist()
+        low_dist = threshold - 2
+        high_dist = threshold + 2
+
+        if button_press == 1:
+            self.drive(-speed)
+            time.sleep(1)
+            if dist > high_dist:
+                self.turn(self.LEFT, 90, speed)
+            elif dist <= high_dist:
+                self.turn(self.RIGHT, 90, speed)
+        else:
+            self.drive(speed)
+
+    def map_output(self, map_number, unit_length, unit, origin, notes):
+
+        # This function outputs a map of resources and walls
+
+        print('Team: ', self.TEAM)
+        print('Map: ', map_number)
+        print('Unit Length: ', unit_length)
+        print('Unit: ', unit)
+        print('Origin: (%.f, %.f)' % (origin[0], origin[1]))
+        print('Notes: ', notes)
+
+    def kill(self):
+
+        # This function resets all motors and sensors. It should only be used at
+        # the end of the code, or as the result of a keyboard interrupt.
+        # THIS FUNCTION WILL BREAK CODE IF YOU USE IT IN THE MIDDLE.
+
+        print('Killing robot.')
+
+        BP.reset_all()
