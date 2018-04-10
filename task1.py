@@ -48,11 +48,14 @@ try:
         robot.stop()
         robot.drive_dist(block_size / 2, speed)
         
-        junction = robot.check_junction(block_size)
+        numJunction, typeJunction = robot.check_junction(block_size)
 
-        if junction == robot.JUNCT_LEFT:
+        if (typeJunction == robot.JUNCT_LEFT) | \
+        (typeJunction == robot.JUNCT_LEFT_RIGHT) | \
+        (typeJunction == robot.JUNCT_LEFT_STRAIGHT):
             robot.turn(robot.LEFT, 90, speed)
-        elif junction == robot.JUNCT_RIGHT:
+        elif (typeJunction == robot.JUNCT_RIGHT) | \
+        (typeJunction == robot.JUNCT_RIGHT_STRAIGHT):
             robot.turn(robot.RIGHT, 90, speed)
 
 except KeyboardInterrupt:
