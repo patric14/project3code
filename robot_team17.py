@@ -77,7 +77,7 @@ class RobotLibrary(object):
     HAZARD_THRESHOLD = 2700
     DIST_DEG = (2 * pi * WHEEL_RADIUS) / 360
     wheel_track_ratio = TRACK_SEPARATION / WHEEL_RADIUS
-    NINETY_TURN = 460
+    NINETY_TURN = 800
     DEG_TURN = NINETY_TURN / 90
     
     # Junction types
@@ -147,7 +147,7 @@ class RobotLibrary(object):
             return self.NONHAZARD_COLOR
         
     def drive(self, speed):
-        BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR, -1 * speed)
+        BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR, speed)
 
     def stop(self):
         BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
@@ -186,11 +186,11 @@ class RobotLibrary(object):
         deg_traveled = 0
 
         if direction == 0:
-            left_speed = speed
-            right_speed = -speed
-        else:
             left_speed = -speed
             right_speed = speed
+        else:
+            left_speed = speed
+            right_speed = -speed
         while deg_traveled < max_deg:
             BP.set_motor_dps(self.LEFT_MOTOR, left_speed)
             BP.set_motor_dps(self.RIGHT_MOTOR, right_speed)

@@ -30,6 +30,10 @@
 import robot_team17
 import time
 
+robot = robot_team17.RobotLibrary()
+
+robot.drive_dist(30, 360)
+
 time.sleep(.5)
 
 robot = robot_team17.RobotLibrary()
