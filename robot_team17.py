@@ -77,8 +77,8 @@ class RobotLibrary(object):
     HAZARD_THRESHOLD = 2700
     DIST_DEG = (2 * pi * WHEEL_RADIUS) / 360
     wheel_track_ratio = TRACK_SEPARATION / WHEEL_RADIUS
-    NINETY_TURN = 800
-    DEG_TURN = NINETY_TURN / 90
+    FULL_TURN = 2055
+    DEG_TURN = FULL_TURN / 360
     
     # Junction types
     JUNCT_DEAD_END = 0
@@ -96,6 +96,11 @@ class RobotLibrary(object):
     BP.set_sensor_type(LIGHT, BP.SENSOR_TYPE.NXT_LIGHT_ON)
 
     # Functions
+
+    def voltage(self):
+        voltage = BP.get_voltage_battery()
+        print('Battery Voltage: ', voltage)
+        return voltage
 
     def getval(self, string):
         val = float(input(string))
@@ -163,7 +168,7 @@ class RobotLibrary(object):
     def drive_dist(self, distance, speed):
 
         # This function drives the robot at the input speed for the input
-        # distnace
+        # distance
 
         print('Traveling distance ', distance)
 
@@ -182,7 +187,10 @@ class RobotLibrary(object):
 
         print('Turning ', degrees, ' degrees.')
         init_deg = BP.get_motor_encoder(self.LEFT_MOTOR)
+        BP.offset_motor_encoder(self.LEFT_MOTOR + self.RIGHT_MOTOR, init_deg)
+        print('init val:', BP.get_motor_encoder(self.LEFT_MOTOR))
         max_deg = degrees * self.DEG_TURN
+        print('max deg:', max_deg)
         deg_traveled = 0
 
         if direction == 0:
@@ -194,8 +202,8 @@ class RobotLibrary(object):
         while deg_traveled < max_deg:
             BP.set_motor_dps(self.LEFT_MOTOR, left_speed)
             BP.set_motor_dps(self.RIGHT_MOTOR, right_speed)
-            deg_traveled = abs(BP.get_motor_encoder(self.LEFT_MOTOR) - \
-                               init_deg)
+            deg_traveled = abs(BP.get_motor_encoder(self.LEFT_MOTOR))
+            #print('traveled:', deg_traveled)
         self.stop()
 
     def turn_ultrasonic(self, direction):
