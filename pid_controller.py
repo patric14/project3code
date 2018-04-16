@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import robot_team17
 import time
 import brickpi3
@@ -21,9 +19,9 @@ try:
 
         P = -1 * KP * e
 
-        BP.set_motor_power(BP.PORT_D, power - P)
-        BP.set_motor_power(BP.PORT_A, power + P)
-        
+        BP.set_motor_power(BP.PORT_D, power - P, power - P)
+        BP.set_motor_power(BP.PORT_A, power + P, power + P)
+
         time.sleep(dT)
 except KeyboardInterrupt:
     pass
