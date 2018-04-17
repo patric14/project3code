@@ -3,7 +3,7 @@ import time
 import brickpi3
 
 robot = robot_team17.RobotLibrary()
-BP = brickpi3.BrickPi3
+BP = brickpi3.BrickPi3()
 
 TARGET = 5
 dT = .2
@@ -19,9 +19,8 @@ try:
 
         P = -1 * KP * e
 
-        BP.set_motor_power(BP.PORT_D, power - P, power - P)
-        BP.set_motor_power(BP.PORT_A, power + P, power + P)
-
+        BP.set_motor_power(robot.RIGHT_MOTOR, power - P)
+        BP.set_motor_power(robot.LEFT_MOTOR, power + P)
         time.sleep(dT)
 except KeyboardInterrupt:
     pass

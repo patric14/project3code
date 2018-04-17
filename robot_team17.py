@@ -34,10 +34,11 @@ from MPU9250 import MPU9250
 from math import pi
 import time
 import numpy as np
+import IR_Functions as ir
 
 # Object Creation
 BP = brickpi3.BrickPi3()
-'''mpu9250 = MPU9250()'''
+imu = MPU9250()
 
 # Library class
 class RobotLibrary(object):
@@ -75,11 +76,13 @@ class RobotLibrary(object):
     BIOHAZARD_COLOR = 'Biohazard' # Yellow
     NONHAZARD_COLOR = 'Nonhazardous' # Blues
     HAZARD_THRESHOLD = 2700
+    CESIUM_THRESHOLD = 180
+    MRI_THRESHOLD = 65
     DIST_DEG = (2 * pi * WHEEL_RADIUS) / 360
     wheel_track_ratio = TRACK_SEPARATION / WHEEL_RADIUS
     FULL_TURN = 2055
     DEG_TURN = FULL_TURN / 360
-    
+
     # Junction types
     JUNCT_DEAD_END = 0
     JUNCT_STRAIGHT = 1
@@ -89,7 +92,7 @@ class RobotLibrary(object):
     JUNCT_LEFT_STRAIGHT = 11
     JUNCT_RIGHT_STRAIGHT = 101
     JUNCT_ALL_WAY = 111
-    
+
 
     # Sensor setup
     BP.set_sensor_type(BUTTON, BP.SENSOR_TYPE.TOUCH)
@@ -118,11 +121,11 @@ class RobotLibrary(object):
         notes = input('Notes: ')
 
         return map_number, unit_length, unit, origin, notes
-    
+
     def mapSetup(xSize, ySize):
-        
+
         # This function sets up the map matrix
-        
+
         mapMatrix = np.zeros(xSize, ySize)
         return mapMatrix
 
@@ -139,18 +142,38 @@ class RobotLibrary(object):
                 trigger = BP.get_sensor(self.BUTTON)
             except brickpi3.SensorError as error:
                 print(error)
-                
+
     def scanner(self):
-        
+
         # This function uses the light sensor to determine which type of waste
         # it is looking at
-        
+
         scan = BP.get_sensor(self.LIGHT)
+        print('Sensor value: ', scan)
         if scan < self.HAZARD_THRESHOLD:
             return self.BIOHAZARD_COLOR
-        else:    
+        else:
             return self.NONHAZARD_COLOR
-        
+
+    def ir_read(self):
+
+        # This function reads the IR sensor data
+
+        [sens1, sens2] = ir.IR_Read(grovepi)
+        if sens2 > 180:
+            print('Danger')
+        return sens2
+
+    def magnet(self):
+
+        # This function returns the magnetic sensor value
+
+        raw = imu.readMagnet()
+
+        magnet = raw['y']
+
+        print(magnet)
+
     def drive(self, speed):
         BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR, speed)
 
@@ -182,7 +205,7 @@ class RobotLibrary(object):
 
     def turn(self, direction, degrees, speed):
 
-        # This function turns the robot the input number of degrees. It also 
+        # This function turns the robot the input number of degrees. It also
         # takes a wheel radius and speed input.
 
         print('Turning ', degrees, ' degrees.')
@@ -236,7 +259,7 @@ class RobotLibrary(object):
         # brickpi ultrasonic sensor and returns the distances
 
         print('Determining junction type')
-        
+
         forwardDist = self.check_distance()
         self.turn_ultrasonic(self.LEFT)
         leftDist = self.check_distance()
@@ -244,10 +267,10 @@ class RobotLibrary(object):
         self.turn_ultrasonic(self.RIGHT)
         rightDist = self.check_distance()
         self.turn_ultrasonic(self.LEFT)
-        
+
         numJunction = 0
         typeJunction = self.JUNCT_DEAD_END
-        
+
         if forwardDist > unit:
             numJunction = numJunction + 1
             typeJunction = self.JUNCT_STRAIGHT + typeJunction
@@ -273,7 +296,7 @@ class RobotLibrary(object):
 
     def kill(self):
 
-        # This function resets all motors and sensors. It should only be used 
+        # This function resets all motors and sensors. It should only be used
         # at the end of the code, or as the result of a keyboard interrupt.
         # THIS FUNCTION WILL BREAK CODE IF YOU USE IT IN THE MIDDLE.
 
