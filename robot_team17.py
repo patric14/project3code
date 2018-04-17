@@ -25,7 +25,7 @@
 # member of the team has a general understanding of
 # all aspects of the program development and execution.
 #
-# Description
+# This is the function library for team 17's mapping robot.
 
 # Imports
 import brickpi3
