@@ -1,10 +1,10 @@
 import robot_team17
 import time
 import brickpi3
-from math import atan, cos, abs
+from math import atan, cos
 
 robot = robot_team17.RobotLibrary()
-BP = brickpi3.BrickPi3
+BP = brickpi3.BrickPi3()
 
 TARGET = 5
 dT = .2
@@ -13,14 +13,19 @@ KP = robot.getval('Input kP: ')
 power = 50
 
 previousDist = robot.check_distance()
-positionPreviousLeft = BP.get_motor_encoder(BP.Port_D)
-positionPreviousRight = BP.get_motor_encoder(BP.Port_A)
+positionPreviousLeft = BP.get_motor_encoder(BP.PORT_D)
+positionPreviousRight = BP.get_motor_encoder(BP.PORT_A)
+
+P = 0
 
 try:
     while True:
+        BP.set_motor_power(BP.PORT_D, power + P)
+        BP.set_motor_power(BP.PORT_A, power - P)
+        
         currentDist = robot.check_distance()
-        positionCurrentLeft = BP.get_motor_encoder(BP.Port_D)
-        positionCurrentRight = BP.get_motor_encoder(BP.Port_A)
+        positionCurrentLeft = BP.get_motor_encoder(BP.PORT_D)
+        positionCurrentRight = BP.get_motor_encoder(BP.PORT_A)
 
         distDiff = currentDist - previousDist
         
@@ -40,9 +45,6 @@ try:
             robot.turn(0, degrees, 100)
         if (angle < 0) and (P < 0):
             robot.turn(1, degrees, 100)
-
-        BP.set_motor_power(BP.PORT_D, power + P, power + P)
-        BP.set_motor_power(BP.PORT_A, power - P, power - P)
 
         time.sleep(dT)
 
