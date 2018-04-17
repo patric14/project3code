@@ -6,8 +6,8 @@ from math import atan, cos
 robot = robot_team17.RobotLibrary()
 BP = brickpi3.BrickPi3()
 
-TARGET = 5
-dT = .2
+dT = robot.getval('dT: ')
+target = robot.getval('Input target distance: ')
 KP = robot.getval('Input kP: ')
 
 power = 50
