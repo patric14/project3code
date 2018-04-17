@@ -29,8 +29,8 @@ try:
 
         distDiff = currentDist - previousDist
         
-        leftDistDrive = robot.DIST_DEG * (positionCurrentLeft - positionPreviousLeft)
-        rightDistDrive = robot.DIST_DEG * (positionCurrentRight - positionPreviousRight)
+        leftDistDrive = robot.DIST_DEG * abs(positionCurrentLeft - positionPreviousLeft)
+        rightDistDrive = robot.DIST_DEG * abs(positionCurrentRight - positionPreviousRight)
         distDrive = (leftDistDrive + rightDistDrive) / 2
         
         angle = atan(distDiff / distDrive)
@@ -40,7 +40,6 @@ try:
         P = (distPerp - 5)
         K = P / 5
         degrees = (1 + K) * abs(angle)
-        
         if (angle > 0) and (P > 0):
             robot.turn(0, degrees, 100)
         if (angle < 0) and (P < 0):
