@@ -3,9 +3,7 @@ import time
 robot = robot_team17.RobotLibrary()
 
 try:
-    while True:
-        robot.magnet()
-        time.sleep(1)
+    print('Magnet: ', robot.magnet())
 except KeyboardInterrupt:
     pass
 

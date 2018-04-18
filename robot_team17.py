@@ -64,10 +64,10 @@ class RobotLibrary(object):
     ULTRASONIC_MOTOR = BP.PORT_B
     BUTTON = BP.PORT_1
     LIGHT = BP.PORT_2
-    WHEEL_RADIUS = 1.8
+    WHEEL_RADIUS = 1.97
     TRACK_SEPARATION = 18
     ULTRASONIC = 2
-    ULTRASONIC_RIGHT = 125
+    ULTRASONIC_RIGHT = 142
 
     # Other Constants
     LEFT = 0
@@ -77,11 +77,13 @@ class RobotLibrary(object):
     NONHAZARD_COLOR = 'Nonhazardous' # Blues
     HAZARD_THRESHOLD = 2700
     CESIUM_THRESHOLD = 180
-    MRI_THRESHOLD = 65
+    MRI_THRESHOLD = -39
     DIST_DEG = (2 * pi * WHEEL_RADIUS) / 360
     wheel_track_ratio = TRACK_SEPARATION / WHEEL_RADIUS
     FULL_TURN = 2055
     DEG_TURN = FULL_TURN / 360
+    POWER = 50
+    KP = 5
 
     # Junction types
     JUNCT_DEAD_END = 0
@@ -114,7 +116,7 @@ class RobotLibrary(object):
 
         origin = []
         map_number = self.getval('Input map: ')
-        unit_length = self.getval('Input unit length: ')
+        block_size = self.getval('Input unit length: ')
         unit = input('Input unit: ')
         origin.append(self.getval('Input x origin coordinate: '))
         origin.append(self.getval('Input y origin coordinate: '))
@@ -160,9 +162,13 @@ class RobotLibrary(object):
         # This function reads the IR sensor data
 
         [sens1, sens2] = ir.IR_Read(grovepi)
+
+        print('IR Reading: ', sens2)
+
         if sens2 > 180:
-            print('Danger')
-        return sens2
+            return 1
+        else:
+            return 0
 
     def magnet(self):
 
@@ -172,10 +178,15 @@ class RobotLibrary(object):
 
         magnet = raw['y']
 
-        print(magnet)
+        print('Magnet Reading: ', magnet)
 
-    def drive(self, speed):
-        BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR, speed)
+        if magnet < self.MRI_THRESHOLD:
+            return 1
+        else:
+            return 0
+
+    '''def drive(self, speed):
+        BP.set_motor_power(self.LEFT_MOTOR + self.RIGHT_MOTOR, speed)'''
 
     def stop(self):
         BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
@@ -188,22 +199,41 @@ class RobotLibrary(object):
 
         return init_deg, max_deg, deg_traveled
 
-    def drive_dist(self, distance, speed):
+    def drive_dist(self, num_blocks, targetDist, block_size):
 
         # This function drives the robot at the input speed for the input
         # distance
 
-        print('Traveling distance ', distance)
+        print('Traveling %f blocks.' % num_blocks)
+
+        distance = float(num_blocks) * block_size
+        print(distance)
 
         init_deg, max_deg, deg_traveled = self.dist_deg_calculator(distance)
+        BP.offset_motor_encoder(self.LEFT_MOTOR + self.RIGHT_MOTOR, init_deg)
+
+        correction = 0
 
         while deg_traveled < max_deg:
-            self.drive(speed)
-            deg_traveled = abs(BP.get_motor_encoder(self.LEFT_MOTOR) - \
-                               init_deg)
+            BP.set_motor_power(self.LEFT_MOTOR, self.POWER - correction)
+            BP.set_motor_power(self.RIGHT_MOTOR, self.POWER + correction)
+
+            currentDist = self.check_distance()
+
+            error = currentDist - targetDist
+
+            if error > block_size:
+                correction = 0
+            else:
+                correction = self.KP * error
+
+            left_traveled = abs(BP.get_motor_encoder(self.LEFT_MOTOR))
+            right_traveled = abs(BP.get_motor_encoder(self.RIGHT_MOTOR))
+            deg_traveled = (left_traveled + right_traveled) / 2
+
         self.stop()
 
-    def turn(self, direction, degrees, speed):
+    def turn(self, direction, degrees):
 
         # This function turns the robot the input number of degrees. It also
         # takes a wheel radius and speed input.
@@ -217,14 +247,14 @@ class RobotLibrary(object):
         deg_traveled = 0
 
         if direction == 0:
-            left_speed = -speed
-            right_speed = speed
+            left_speed = -1 * self.POWER
+            right_speed = self.POWER
         else:
-            left_speed = speed
-            right_speed = -speed
+            left_speed = self.POWER
+            right_speed = -1 * self.POWER
         while deg_traveled < max_deg:
-            BP.set_motor_dps(self.LEFT_MOTOR, left_speed)
-            BP.set_motor_dps(self.RIGHT_MOTOR, right_speed)
+            BP.set_motor_power(self.LEFT_MOTOR, left_speed)
+            BP.set_motor_power(self.RIGHT_MOTOR, right_speed)
             deg_traveled = abs(BP.get_motor_encoder(self.LEFT_MOTOR))
             #print('traveled:', deg_traveled)
         self.stop()
@@ -239,11 +269,13 @@ class RobotLibrary(object):
             power = -50
 
         init = BP.get_motor_encoder(self.ULTRASONIC_MOTOR)
+        BP.offset_motor_encoder(self.ULTRASONIC_MOTOR, init)
+
         diff = 0
 
         while diff < self.ULTRASONIC_RIGHT:
             BP.set_motor_power(self.ULTRASONIC_MOTOR, power)
-            diff = abs(BP.get_motor_encoder(self.ULTRASONIC_MOTOR) - init)
+            diff = abs(BP.get_motor_encoder(self.ULTRASONIC_MOTOR))
             time.sleep(.01)
 
         self.stop()
@@ -260,12 +292,12 @@ class RobotLibrary(object):
 
         print('Determining junction type')
 
-        forwardDist = self.check_distance()
-        self.turn_ultrasonic(self.LEFT)
         leftDist = self.check_distance()
         self.turn_ultrasonic(self.RIGHT)
+        forwardDist = self.check_distance()
         self.turn_ultrasonic(self.RIGHT)
         rightDist = self.check_distance()
+        self.turn_ultrasonic(self.LEFT)
         self.turn_ultrasonic(self.LEFT)
 
         numJunction = 0
@@ -281,7 +313,7 @@ class RobotLibrary(object):
             numJunction = numJunction + 1
             typeJunction = self.JUNCT_RIGHT + typeJunction
 
-        return numJunction, typeJunction
+        return typeJunction
 
     def map_output(self, map_number, unit_length, unit, origin, notes):
 
