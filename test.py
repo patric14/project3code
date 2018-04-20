@@ -3,7 +3,7 @@ import time
 robot = robot_team17.RobotLibrary()
 
 try:
-    print('Magnet: ', robot.magnet())
+    robot.drive_dist(1, 15, 40)
 except KeyboardInterrupt:
     pass
 

@@ -31,7 +31,7 @@
 import brickpi3
 import grovepi
 from MPU9250 import MPU9250
-from math import pi
+from math import pi, atan, acos, cos, sin
 import time
 import numpy as np
 import IR_Functions as ir
@@ -216,18 +216,23 @@ class RobotLibrary(object):
 
         correction = 0
 
+        distTotal = 0
+        previousDist = 0
+
         while distTotal < num_blocks * block_size:
             BP.set_motor_power(self.LEFT_MOTOR, self.POWER - correction)
             BP.set_motor_power(self.RIGHT_MOTOR, self.POWER + correction)
 
-            currentDist = robot.check_distance()
+            currentDist = self.check_distance()
             positionCurrentLeft = BP.get_motor_encoder(BP.PORT_D)
             positionCurrentRight = BP.get_motor_encoder(BP.PORT_A)
-  
+
             distDiff = currentDist - previousDist
 
-            leftDistDrive = robot.DIST_DEG * abs(positionCurrentLeft - positionPreviousLeft)
-            rightDistDrive = robot.DIST_DEG * abs(positionCurrentRight - positionPreviousRight)
+            leftDistDrive = self.DIST_DEG * abs(positionCurrentLeft - \
+                                                 positionPreviousLeft)
+            rightDistDrive = self.DIST_DEG * abs(positionCurrentRight - \
+                                                  positionPreviousRight)
             distDrive = (leftDistDrive + rightDistDrive) / 2
 
             angle = atan(distDiff / distDrive)

@@ -33,7 +33,7 @@ robot = robot_team17.RobotLibrary()
 fully_mapped = False
 explore_space = False
 
-robot.setup()
+map_number, unit_length, unit, origin, notes = robot.setup()
 
-'''while explore_space == False:
-'''
+while explore_space == False:
+    robot.drive_dist()
