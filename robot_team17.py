@@ -122,7 +122,7 @@ class RobotLibrary(object):
         origin.append(self.getval('Input y origin coordinate: '))
         notes = input('Notes: ')
 
-        return map_number, unit_length, unit, origin, notes
+        return map_number, block_size, unit, origin, notes
 
     def mapSetup(xSize, ySize):
 
