@@ -192,12 +192,12 @@ class RobotLibrary(object):
         BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
                          self.ULTRASONIC_MOTOR, 0)
 
-    def dist_deg_calculator(self, distance):
-        init_deg = BP.get_motor_encoder(self.LEFT_MOTOR)
-        max_deg = distance / self.DIST_DEG
-        deg_traveled = 0
+    def reset_encoders(self):
 
-        return init_deg, max_deg, deg_traveled
+        BP.offset_motor_encoder(self.LEFT_MOTOR, \
+                                BP.get_motor_encoder(self.LEFT_MOTOR))
+        BP.offset_motor_encoder(self.RIGHT_MOTOR, \
+                                BP.get_motor_encoder(self.RIGHT_MOTOR))
 
     def drive_dist(self, num_blocks, targetDist, block_size):
 
@@ -209,8 +209,7 @@ class RobotLibrary(object):
         distance = float(num_blocks) * block_size
         print(distance)
 
-        init_deg, max_deg, deg_traveled = self.dist_deg_calculator(distance)
-        BP.offset_motor_encoder(self.LEFT_MOTOR + self.RIGHT_MOTOR, init_deg)
+        self.reset_encoders()
         positionPreviousLeft = 0
         positionPreviousRight = 0
 
@@ -251,6 +250,12 @@ class RobotLibrary(object):
             positionPreviousRight = positionCurrentRight
             previousDist = currentDist
 
+            print('angle: ', angle)
+            print('distTotal: ', distTotal)
+            print('distParallel: ', distParallel)
+            print('distDrive: ', distDrive)
+            print('positionCurrentLeft: ', positionCurrentLeft)
+            print('positionCurrentRight: ', positionCurrentRight)
         self.stop()
 
     def turn(self, direction, degrees):
@@ -335,12 +340,12 @@ class RobotLibrary(object):
 
         return typeJunction
 
-    def turn_junction(self, typeJunction):
+    '''def turn_junction(self, typeJunction):
 
         # This function turns the robot to the leftmost fork of a Junction
 
         if typeJunction == self.JUNCT_LEFT or typeJunction == self.JUNCT_LEFT_RIGHT or typeJunction == self.
-
+'''
     def map_output(self, map_number, unit_length, unit, origin, notes):
 
         # This function outputs a map of resources and walls
