@@ -86,14 +86,14 @@ class RobotLibrary(object):
     KP = 3
 
     # Junction types
-    JUNCT_DEAD_END = 0
-    JUNCT_STRAIGHT = 1
-    JUNCT_LEFT = 10
-    JUNCT_RIGHT = 100
-    JUNCT_LEFT_RIGHT = 110
-    JUNCT_LEFT_STRAIGHT = 11
-    JUNCT_RIGHT_STRAIGHT = 101
-    JUNCT_ALL_WAY = 111
+    JUNCT_DEAD_END = 1
+    JUNCT_STRAIGHT = 2
+    JUNCT_LEFT = 20
+    JUNCT_RIGHT = 200
+    JUNCT_LEFT_RIGHT = 220
+    JUNCT_LEFT_STRAIGHT = 22
+    JUNCT_RIGHT_STRAIGHT = 202
+    JUNCT_ALL_WAY = 222
 
 
     # Sensor setup
