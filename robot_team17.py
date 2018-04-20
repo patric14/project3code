@@ -237,7 +237,7 @@ class RobotLibrary(object):
 
             angle = atan(distDiff / distDrive)
             distPerp = currentDist * cos(abs(angle))
-            distParallel = distDiff / sin(abs(angle))
+            distParallel = distDrive * cos(abs(angle))
             distTotal = distTotal + distParallel
 
             error = distPerp - targetDist
