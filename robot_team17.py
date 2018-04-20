@@ -246,6 +246,10 @@ class RobotLibrary(object):
                 correction = 0
             else:
                 correction = self.KP * error
+    
+            positionPreviousLeft = positionCurrentLeft
+            positionPreviousRight = positionCUrrentRight
+            previousDist = currentDist
 
         self.stop()
 
