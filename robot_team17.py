@@ -82,8 +82,8 @@ class RobotLibrary(object):
     wheel_track_ratio = TRACK_SEPARATION / WHEEL_RADIUS
     FULL_TURN = 2055
     DEG_TURN = FULL_TURN / 360
-    POWER = 50
-    KP = 5
+    POWER = 75
+    KP = 3
 
     # Junction types
     JUNCT_DEAD_END = 0
@@ -249,13 +249,6 @@ class RobotLibrary(object):
             positionPreviousLeft = positionCurrentLeft
             positionPreviousRight = positionCurrentRight
             previousDist = currentDist
-
-            print('angle: ', angle)
-            print('distTotal: ', distTotal)
-            print('distParallel: ', distParallel)
-            print('distDrive: ', distDrive)
-            print('positionCurrentLeft: ', positionCurrentLeft)
-            print('positionCurrentRight: ', positionCurrentRight)
         self.stop()
 
     def turn(self, direction, degrees):
@@ -340,12 +333,20 @@ class RobotLibrary(object):
 
         return typeJunction
 
-    '''def turn_junction(self, typeJunction):
+    def turn_junction(self, unit):
 
         # This function turns the robot to the leftmost fork of a Junction
+        typeJunction = self.check_junction(unit)
+        if (typeJunction == self.JUNCT_LEFT) or \
+        (typeJunction == self.JUNCT_LEFT_RIGHT) or \
+        (typeJunction == self.JUNCT_LEFT_STRAIGHT) or \
+        (typeJunction == self.JUNCT_ALL_WAY):
+            self.turn(self.LEFT, 90)
+        elif (typeJunction == self.JUNCT_RIGHT):
+            self.turn(self.RIGHT, 90)
+        elif typeJunction == self.JUNCT_DEAD_END:
+            self.turn(self.RIGHT, 180)
 
-        if typeJunction == self.JUNCT_LEFT or typeJunction == self.JUNCT_LEFT_RIGHT or typeJunction == self.
-'''
     def map_output(self, map_number, unit_length, unit, origin, notes):
 
         # This function outputs a map of resources and walls
