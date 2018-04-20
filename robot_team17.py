@@ -246,9 +246,9 @@ class RobotLibrary(object):
                 correction = 0
             else:
                 correction = self.KP * error
-    
+
             positionPreviousLeft = positionCurrentLeft
-            positionPreviousRight = positionCUrrentRight
+            positionPreviousRight = positionCurrentRight
             previousDist = currentDist
 
         self.stop()
@@ -334,6 +334,12 @@ class RobotLibrary(object):
             typeJunction = self.JUNCT_RIGHT + typeJunction
 
         return typeJunction
+
+    def turn_junction(self, typeJunction):
+
+        # This function turns the robot to the leftmost fork of a Junction
+
+        if typeJunction == self.JUNCT_LEFT or typeJunction == self.JUNCT_LEFT_RIGHT or typeJunction == self.
 
     def map_output(self, map_number, unit_length, unit, origin, notes):
 

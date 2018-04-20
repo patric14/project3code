@@ -35,5 +35,7 @@ explore_space = False
 
 map_number, block_size, unit, origin, notes = robot.setup()
 
-'''while explore_space == False:
-    robot.drive_dist()'''
+targetDist = .5 * block_size
+
+while explore_space == False:
+    robot.drive_dist(1, targetDist, block_size)
