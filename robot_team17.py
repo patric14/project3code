@@ -211,25 +211,36 @@ class RobotLibrary(object):
 
         init_deg, max_deg, deg_traveled = self.dist_deg_calculator(distance)
         BP.offset_motor_encoder(self.LEFT_MOTOR + self.RIGHT_MOTOR, init_deg)
+        positionPreviousLeft = 0
+        positionPreviousRight = 0
 
         correction = 0
 
-        while deg_traveled < max_deg:
+        while distTotal < num_blocks * block_size:
             BP.set_motor_power(self.LEFT_MOTOR, self.POWER - correction)
             BP.set_motor_power(self.RIGHT_MOTOR, self.POWER + correction)
 
-            currentDist = self.check_distance()
+            currentDist = robot.check_distance()
+            positionCurrentLeft = BP.get_motor_encoder(BP.PORT_D)
+            positionCurrentRight = BP.get_motor_encoder(BP.PORT_A)
+  
+            distDiff = currentDist - previousDist
 
-            error = currentDist - targetDist
+            leftDistDrive = robot.DIST_DEG * abs(positionCurrentLeft - positionPreviousLeft)
+            rightDistDrive = robot.DIST_DEG * abs(positionCurrentRight - positionPreviousRight)
+            distDrive = (leftDistDrive + rightDistDrive) / 2
+
+            angle = atan(distDiff / distDrive)
+            distPerp = currentDist * cos(abs(angle))
+            distParallel = distDiff / sin(abs(angle))
+            distTotal = distTotal + distParallel
+
+            error = distPerp - targetDist
 
             if error > block_size:
                 correction = 0
             else:
                 correction = self.KP * error
-
-            left_traveled = abs(BP.get_motor_encoder(self.LEFT_MOTOR))
-            right_traveled = abs(BP.get_motor_encoder(self.RIGHT_MOTOR))
-            deg_traveled = (left_traveled + right_traveled) / 2
 
         self.stop()
 
