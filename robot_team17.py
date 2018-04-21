@@ -82,7 +82,7 @@ class RobotLibrary(object):
     NONHAZARD_COLOR = 'Nonhazardous' # Blues
     WALL_COLOR = 'Wall' # White
     HAZARD_THRESHOLD = 2700
-    WALL_THRESHOLD = 2200
+    WALL_THRESHOLD = 2400
     CESIUM_THRESHOLD = 180
     MRI_THRESHOLD = -39
     DIST_DEG = (2 * pi * WHEEL_RADIUS) / 360
@@ -94,11 +94,6 @@ class RobotLibrary(object):
 
     # Junction types
     JUNCT_DEAD_END = 1
-    JUNCT_STRAIGHT = 2
-    JUNCT_LEFT = 20
-    JUNCT_RIGHT = 200
-    JUNCT_LEFT_RIGHT = 220
-    JUNCT_LEFT_STRAIGHT = 22
     JUNCT_STRAIGHT = -1
     JUNCT_LEFT = -10
     JUNCT_RIGHT = -100
