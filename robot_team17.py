@@ -62,6 +62,7 @@ class RobotLibrary(object):
     LEFT_MOTOR = BP.PORT_D
     RIGHT_MOTOR = BP.PORT_A
     ULTRASONIC_MOTOR = BP.PORT_B
+    ARM_MOTOR = BP.PORT_C
     BUTTON = BP.PORT_1
     LIGHT = BP.PORT_2
     WHEEL_RADIUS = 1.97
@@ -98,8 +99,13 @@ class RobotLibrary(object):
     JUNCT_RIGHT = 200
     JUNCT_LEFT_RIGHT = 220
     JUNCT_LEFT_STRAIGHT = 22
-    JUNCT_RIGHT_STRAIGHT = 202
-    JUNCT_ALL_WAY = 222
+    JUNCT_STRAIGHT = -1
+    JUNCT_LEFT = -10
+    JUNCT_RIGHT = -100
+    JUNCT_LEFT_RIGHT = -110
+    JUNCT_LEFT_STRAIGHT = -11
+    JUNCT_RIGHT_STRAIGHT = -101
+    JUNCT_ALL_WAY = -111
 
 
     # Sensor setup
@@ -158,10 +164,12 @@ class RobotLibrary(object):
 
         scan = BP.get_sensor(self.LIGHT)
         print('Sensor value: ', scan)
-        if scan < self.HAZARD_THRESHOLD:
-            return self.BIOHAZARD_COLOR
-        else:
+        if scan > self.HAZARD_THRESHOLD:
             return self.NONHAZARD_COLOR
+        elif scan < self.WALL_THRESHOLD:
+            return self.WALL_COLOR
+        else:
+            return self.BIOHAZARD_COLOR
 
     def ir_read(self):
 
@@ -191,19 +199,14 @@ class RobotLibrary(object):
         else:
             return 0
 
-    '''def drive(self, speed):
-        BP.set_motor_power(self.LEFT_MOTOR + self.RIGHT_MOTOR, speed)'''
-
     def stop(self):
         BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
                          self.ULTRASONIC_MOTOR, 0)
 
-    def reset_encoders(self):
+    def reset_encoder(self, motor):
 
-        BP.offset_motor_encoder(self.LEFT_MOTOR, \
-                                BP.get_motor_encoder(self.LEFT_MOTOR))
-        BP.offset_motor_encoder(self.RIGHT_MOTOR, \
-                                BP.get_motor_encoder(self.RIGHT_MOTOR))
+        BP.offset_motor_encoder(motor, \
+                                BP.get_motor_encoder(motor))
 
     def drive_dist(self, num_blocks, block_size):
 
@@ -223,7 +226,8 @@ class RobotLibrary(object):
 
         distance = abs(distance)
 
-        self.reset_encoders()
+        self.reset_encoder(self.LEFT_MOTOR)
+        self.reset_encoder(self.RIGHT_MOTOR)
         positionPreviousLeft = 0
         positionPreviousRight = 0
 
@@ -274,8 +278,8 @@ class RobotLibrary(object):
         # takes a wheel radius and speed input.
 
         print('Turning ', degrees, ' degrees.')
-        init_deg = BP.get_motor_encoder(self.LEFT_MOTOR)
-        BP.offset_motor_encoder(self.LEFT_MOTOR + self.RIGHT_MOTOR, init_deg)
+        self.reset_encoder(self.LEFT_MOTOR)
+        self.reset_encoder(self.RIGHT_MOTOR)
         print('init val:', BP.get_motor_encoder(self.LEFT_MOTOR))
         max_deg = degrees * self.DEG_TURN
         print('max deg:', max_deg)
@@ -303,8 +307,7 @@ class RobotLibrary(object):
         elif direction == self.RIGHT:
             power = -50
 
-        init = BP.get_motor_encoder(self.ULTRASONIC_MOTOR)
-        BP.offset_motor_encoder(self.ULTRASONIC_MOTOR, init)
+        self.reset_encoder(self.ULTRASONIC_MOTOR)
 
         diff = 0
 
@@ -355,9 +358,39 @@ class RobotLibrary(object):
         junction = self.check_map(junction)
 
 
-    def check_map(self, junction, map, direction, positionX, positionY):
+    def check_map(self, junction, mapMatrix, direction, positionX, positionY):
         if (direction == self.LEFT):
-            forward =
+            forwardMap = mapMatrix[positionX - 1, positionY]
+            leftMap = mapMatrix[positionX, positionY - 1]
+            rightMap = mapMatrix[positionX, positionY + 1]
+        if (direction == self.UP):
+            forwardMap = mapMatrix[positionX, positionY + 1]
+            leftMap = mapMatrix[positionX - 1, positionY]
+            rightMap = mapMatrix[positionX + 1, positionY]
+        if (direction == self.RIGHT):
+            forwardMap = mapMatrix[positionX + 1, positionY]
+            leftMap = mapMatrix[positionX, positionY + 1]
+            rightMap = mapMatrix[positionX, positionY - 1]
+        if (direction == self.DOWN):
+            forwardMap = mapMatrix[positionX, positionY - 1]
+            leftMap = mapMatrix[positionX + 1, positionY]
+            rightMap = mapMatrix[positionX - 1, positionY]
+
+        forwardMap = -1 * (forwardMap - 1)
+        leftMap = -1 * (leftMap - 1)
+        rightMap = -1 * (rightMap - 1)
+        
+        forwardJunt = (int(abs(junction)) % 10) % 10
+        leftJunct = (int(abs(junction)) / 10) % 10
+        rightJunct = int(abs(junction)) / 100
+
+        straight = int(forwardMap * forwardJunct)
+        left = int(leftMap * leftJunct)
+        right = int(rightMap * rightJunct)
+
+        junction = -1 * (stright + (10 * left) + (100 * right))
+
+        return junction
 
     def turn_junction(self, junction):
 
