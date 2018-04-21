@@ -79,7 +79,9 @@ class RobotLibrary(object):
     STRAIGHT = 2
     BIOHAZARD_COLOR = 'Biohazard' # Yellow
     NONHAZARD_COLOR = 'Nonhazardous' # Blues
+    WALL_COLOR = 'Wall' # White
     HAZARD_THRESHOLD = 2700
+    WALL_THRESHOLD = 2200
     CESIUM_THRESHOLD = 180
     MRI_THRESHOLD = -39
     DIST_DEG = (2 * pi * WHEEL_RADIUS) / 360
@@ -348,11 +350,20 @@ class RobotLibrary(object):
 
         return typeJunction
 
-    def turn_junction(self, unit):
+    def explore_space(self, unit):
+        junction = self.check_junction(unit)
+        junction = self.check_map(junction)
+
+
+    def check_map(self, junction, map, direction, positionX, positionY):
+        if (direction == self.LEFT):
+            forward =
+
+    def turn_junction(self, junction):
 
         # This function turns the robot to the leftmost fork of a Junction
 
-        typeJunction = self.check_junction(unit)
+        typeJunction = junction
         if (typeJunction == self.JUNCT_LEFT) or \
         (typeJunction == self.JUNCT_LEFT_RIGHT) or \
         (typeJunction == self.JUNCT_LEFT_STRAIGHT) or \
