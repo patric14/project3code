@@ -69,9 +69,13 @@ class RobotLibrary(object):
     ULTRASONIC = 2
     ULTRASONIC_RIGHT = 142
 
-    # Other Constants
+    # Direction
     LEFT = 0
     RIGHT = 1
+    UP = 2
+    DOWN = 3
+
+    # Other Constants
     STRAIGHT = 2
     BIOHAZARD_COLOR = 'Biohazard' # Yellow
     NONHAZARD_COLOR = 'Nonhazardous' # Blues
@@ -199,28 +203,39 @@ class RobotLibrary(object):
         BP.offset_motor_encoder(self.RIGHT_MOTOR, \
                                 BP.get_motor_encoder(self.RIGHT_MOTOR))
 
-    def drive_dist(self, num_blocks, targetDist, block_size):
+    def drive_dist(self, num_blocks, block_size):
 
         # This function drives the robot at the input speed for the input
         # distance
 
+        targetDist = .5 * block_size
+
         print('Traveling %f blocks.' % num_blocks)
 
         distance = float(num_blocks) * block_size
-        print(distance)
+
+        if distance < 0:
+            direction = -1
+        else:
+            direction = 1
+
+        distance = abs(distance)
 
         self.reset_encoders()
         positionPreviousLeft = 0
         positionPreviousRight = 0
 
         correction = 0
-
         distTotal = 0
         previousDist = 0
 
         while distTotal < num_blocks * block_size:
-            BP.set_motor_power(self.LEFT_MOTOR, self.POWER - correction)
-            BP.set_motor_power(self.RIGHT_MOTOR, self.POWER + correction)
+
+            left_power = direction * (self.POWER - correction)
+            right_power = direction * (self.POWER + correction)
+
+            BP.set_motor_power(self.LEFT_MOTOR, left_power)
+            BP.set_motor_power(self.RIGHT_MOTOR, right_power)
 
             currentDist = self.check_distance()
             positionCurrentLeft = BP.get_motor_encoder(BP.PORT_D)
@@ -336,6 +351,7 @@ class RobotLibrary(object):
     def turn_junction(self, unit):
 
         # This function turns the robot to the leftmost fork of a Junction
+
         typeJunction = self.check_junction(unit)
         if (typeJunction == self.JUNCT_LEFT) or \
         (typeJunction == self.JUNCT_LEFT_RIGHT) or \
@@ -346,6 +362,31 @@ class RobotLibrary(object):
             self.turn(self.RIGHT, 90)
         elif typeJunction == self.JUNCT_DEAD_END:
             self.turn(self.RIGHT, 180)
+
+    def drive_coord(self, block_size, direction, initCoord, finalCoord):
+
+        # Drive from initial coord to final coord
+
+        initX = initCoord[0]
+        initY = initCoord[1]
+        finalX = finalCoord[0]
+        finalY = finalCoord[1]
+
+        xTravel = finalX - initX
+        yTravel = finalY - initY
+
+        if direction == self.LEFT or self.RIGHT:
+            self.drive_dist(xTravel, block_size)
+            self.turn(self.RIGHT, 90)
+            self.drive_dist(yTravel, block_size)
+        else:
+            self.drive_dist(yTravel, block_size)
+            self.turn(self.RIGHT, 90)
+            self.drive_dist(xTravel, block_size)
+
+        direction += 2
+
+        return direction
 
     def map_output(self, map_number, unit_length, unit, origin, notes):
 
