@@ -374,7 +374,7 @@ class RobotLibrary(object):
         forwardMap = -1 * (forwardMap - 1)
         leftMap = -1 * (leftMap - 1)
         rightMap = -1 * (rightMap - 1)
-        
+
         forwardJunt = (int(abs(junction)) % 10) % 10
         leftJunct = (int(abs(junction)) / 10) % 10
         rightJunct = int(abs(junction)) / 100
@@ -437,6 +437,40 @@ class RobotLibrary(object):
         print('Unit: ', unit)
         print('Origin: (%.f, %.f)' % (origin[0], origin[1]))
         print('Notes: ', notes)
+
+    def weigh(self):
+        self.scanner()
+        if scan > WALL_THRESHOLD:
+            self.drive_dist(1,-10) # cm
+            self.turn(0,180)
+
+            # lower the motor
+            self.reset_motor_encoder(self.ARM_MOTOR)
+            final_deg = 108
+            deg = BP.get_motor_encoder(self.ARM_MOTOR)
+            while deg < 108:
+                BP.set_motor_power(self.ARM_MOTOR, -50)
+
+            # drive towards resource
+            self.drive_dist(1,15) # cm
+            initial_time = time.time()
+            # lift resource and keep track of time elapsed
+            while deg > 23:
+                BP.set_motor_power(self.ARM_MOTOR, 50)
+                elapsed_time = time.time() - initial_time
+
+            # set the resource back down
+            while deg < 108:
+                BP.set_motor_power(self.ARM_MOTOR,-50)
+
+            # drive away from resource
+            drive_dist(1,15) # cm
+
+            # lift hook back to initial position
+            while deg > 0:
+                BP.set_motor_power(self.ARM_MOTOR,50)
+
+            robot.turn(0,180)
 
     def kill(self):
 
