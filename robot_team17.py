@@ -583,6 +583,13 @@ class RobotLibrary(object):
         self.reset_encoder(self.ARM_MOTOR)
         self.set_motor(self.ARM_MOTOR, 130)
 
+    def weight_calc(self, time):
+
+        torque = ((.785 / time) - 165) / -.4539
+
+        weight = (torque * 45) / (9.8)
+
+
     def weigh(self):
         scan = self.scanner()
         if scan != self.WALL_COLOR:
