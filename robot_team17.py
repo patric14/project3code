@@ -635,9 +635,12 @@ class RobotLibrary(object):
 
             self.turn(0,180)
 
+<<<<<<< HEAD
         return mass
 
 
+=======
+>>>>>>> c24e3030d4a5eee04bf69f1f96210f658865b2c3
     def kill(self):
 
         # This function resets all motors and sensors. It should only be used
