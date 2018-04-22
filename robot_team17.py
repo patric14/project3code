@@ -87,9 +87,10 @@ class RobotLibrary(object):
     MRI_THRESHOLD = -39
     DIST_DEG = (2 * pi * WHEEL_RADIUS) / 360
     wheel_track_ratio = TRACK_SEPARATION / WHEEL_RADIUS
-    FULL_TURN = 2055
+    FULL_TURN = 1950
     DEG_TURN = FULL_TURN / 360
     POWER = 75
+    TURN_POWER = 50
     KP = 3
 
     # Junction types
@@ -156,9 +157,13 @@ class RobotLibrary(object):
 
         # This function uses the light sensor to determine which type of waste
         # it is looking at
-
-        scan = BP.get_sensor(self.LIGHT)
-        print('Sensor value: ', scan)
+        scan = -1
+        while scan == -1:
+            try:
+                scan = BP.get_sensor(self.LIGHT)
+            except brickpi3.SensorError as error:
+                print(error)
+            print('Sensor value: ', scan)
         if scan > self.HAZARD_THRESHOLD:
             return self.NONHAZARD_COLOR
         elif scan < self.WALL_THRESHOLD:
@@ -196,30 +201,30 @@ class RobotLibrary(object):
 
     def stop(self):
         BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
-                         self.ULTRASONIC_MOTOR, 0)
+                         self.ULTRASONIC_MOTOR + self.ARM_MOTOR, 0)
+        time.sleep(.2)
 
     def reset_encoder(self, motor):
 
-        BP.offset_motor_encoder(motor, \
-                                BP.get_motor_encoder(motor))
+        BP.offset_motor_encoder(motor, BP.get_motor_encoder(motor))
 
-    def drive_dist(self, num_blocks, block_size):
+    def drive_dist_follow(self, num_blocks, block_size):
 
         # This function drives the robot at the input speed for the input
         # distance
+
+        if block_size < 0:
+            direction = -1
+        else:
+            direction = 1
+
+        block_size = abs(block_size)
 
         targetDist = .5 * block_size
 
         print('Traveling %f blocks.' % num_blocks)
 
         distance = float(num_blocks) * block_size
-
-        if distance < 0:
-            direction = -1
-        else:
-            direction = 1
-
-        distance = abs(distance)
 
         self.reset_encoder(self.LEFT_MOTOR)
         self.reset_encoder(self.RIGHT_MOTOR)
@@ -239,8 +244,8 @@ class RobotLibrary(object):
             BP.set_motor_power(self.RIGHT_MOTOR, right_power)
 
             currentDist = self.check_distance()
-            positionCurrentLeft = BP.get_motor_encoder(BP.PORT_D)
-            positionCurrentRight = BP.get_motor_encoder(BP.PORT_A)
+            positionCurrentLeft = abs(BP.get_motor_encoder(self.LEFT_MOTOR))
+            positionCurrentRight = abs(BP.get_motor_encoder(self.RIGHT_MOTOR))
 
             distDiff = currentDist - previousDist
 
@@ -281,11 +286,11 @@ class RobotLibrary(object):
         deg_traveled = 0
 
         if direction == 0:
-            left_speed = -1 * self.POWER
-            right_speed = self.POWER
+            left_speed = -1 * self.TURN_POWER
+            right_speed = self.TURN_POWER
         else:
-            left_speed = self.POWER
-            right_speed = -1 * self.POWER
+            left_speed = self.TURN_POWER
+            right_speed = -1 * self.TURN_POWER
         while deg_traveled < max_deg:
             BP.set_motor_power(self.LEFT_MOTOR, left_speed)
             BP.set_motor_power(self.RIGHT_MOTOR, right_speed)
@@ -438,39 +443,52 @@ class RobotLibrary(object):
         print('Origin: (%.f, %.f)' % (origin[0], origin[1]))
         print('Notes: ', notes)
 
-    def weigh(self):
-        self.scanner()
-        if scan > WALL_THRESHOLD:
-            self.drive_dist(1,-10) # cm
-            self.turn(0,180)
+    def set_motor(self, motor, deg):
+        deg_diff = 6
+        while deg_diff > 5:
+            deg_diff = abs(BP.get_motor_encoder(self.ARM_MOTOR) - deg)
+            BP.set_motor_position(self.ARM_MOTOR, deg)
 
+    def fix_arm(self):
+        self.reset_encoder(self.ARM_MOTOR)
+        self.set_motor(self.ARM_MOTOR, 130)
+
+    def weigh(self):
+        scan = self.scanner()
+        if scan != self.WALL_COLOR:
+            self.drive_dist(1, -10) # cm
+            self.turn(self.LEFT, 180)
+            self.stop()
+            print('turn complete')
             # lower the motor
-            self.reset_motor_encoder(self.ARM_MOTOR)
-            final_deg = 108
-            deg = BP.get_motor_encoder(self.ARM_MOTOR)
-            while deg < 108:
-                BP.set_motor_power(self.ARM_MOTOR, -50)
+            self.set_motor(self.ARM_MOTOR, 0)
 
             # drive towards resource
-            self.drive_dist(1,15) # cm
+            self.drive_dist(1, -15) # cm
+            self.stop()
+            print('driving to it')
             initial_time = time.time()
             # lift resource and keep track of time elapsed
-            while deg > 23:
-                BP.set_motor_power(self.ARM_MOTOR, 50)
-                elapsed_time = time.time() - initial_time
+            initial_time = time.time()
+            BP.set_motor_power(self.ARM_MOTOR, 50)
+            while BP.get_motor_encoder(self.ARM_MOTOR) != 45:
+                timer = time.time() - initial_time
+            self.stop()
+
+            print('time: ', timer)
 
             # set the resource back down
-            while deg < 108:
-                BP.set_motor_power(self.ARM_MOTOR,-50)
+            self.set_motor(self.ARM_MOTOR, 0)
+            self.stop()
 
             # drive away from resource
-            drive_dist(1,15) # cm
+            self.drive_dist(1, 15) # cm
 
             # lift hook back to initial position
-            while deg > 0:
-                BP.set_motor_power(self.ARM_MOTOR,50)
+            self.set_motor(self.ARM_MOTOR, 130)
+            self.stop()
 
-            robot.turn(0,180)
+            self.turn(0,180)
 
     def kill(self):
 
