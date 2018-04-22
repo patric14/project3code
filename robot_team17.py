@@ -348,15 +348,29 @@ class RobotLibrary(object):
 
     def explore_space(self, block_size, mapMatrix, direction, positionX, positionY):
         junction = self.check_junction(block_size)
+        minimum = -1
+        while minimum < 0:
+            for i in range(len(mapMatrix)):
         while junction = self.JUNCT_STRAIGHT:
             self.drive_dist(1, block_size)
-            self.update_position()
-            self.update_map()
+            mapMatrix[positionY[positionX]] = 1
+            positionX, positionY = self.change_position()
+            junction = self.check_junction(block_size)
 
         junction = self.check_map(junction, mapMatrix, direction, positionX, positionY)
         direction = self.turn_junction(junction, direction)
 
-    def update
+    def change_position(self, direction, positionX, positionY):
+        if (direction == self.LEFT):
+            positionX -= 1
+        if (direction == self.RIGHT):
+            positionX += 1
+        if (direction == self.UP):
+            positionY += 1
+        if (direction == self.DOWN):
+            positionY -= 1
+        return positionX, positionY
+
     def check_map(self, junction, mapMatrix, direction, positionX, positionY):
         if (direction == self.LEFT):
             forwardMap = mapMatrix[positionX - 1, positionY]
@@ -555,8 +569,6 @@ class RobotLibrary(object):
         print('Origin: (%.f, %.f)' % (origin[0], origin[1]))
         print('Notes: ', notes)
 
-<<<<<<< HEAD
-=======
     def set_motor(self, motor, deg):
         deg_diff = 6
         while deg_diff > 5:
@@ -567,14 +579,24 @@ class RobotLibrary(object):
         self.reset_encoder(self.ARM_MOTOR)
         self.set_motor(self.ARM_MOTOR, 130)
 
-    def weight_calc(self, time):
+    def mass(self, time):
 
-        torque = ((.785 / time) - 165) / -.4539
+        # time in s
+        torque = ((.785 / time) - 165) / -.4539 # N * m
+        grav = 9.8 # m/s^2
+        height = 5.5 # cm
+        angle = 45 # degrees
 
-        weight = (torque * 45) / (9.8)
+        mass = torque * angle / height * grav
 
+        return mass
 
     def weigh(self):
+
+        # This function detects
+
+        mass = 'error massing'
+
         scan = self.scanner()
         if scan != self.WALL_COLOR:
             self.drive_dist(1, -10) # cm
@@ -596,6 +618,8 @@ class RobotLibrary(object):
                 timer = time.time() - initial_time
             self.stop()
 
+            mass = self.mass(timer)
+
             print('time: ', timer)
 
             # set the resource back down
@@ -611,7 +635,9 @@ class RobotLibrary(object):
 
             self.turn(0,180)
 
->>>>>>> 80c5bc8e72445521157956be399dbe7c7268cd50
+        return mass
+
+
     def kill(self):
 
         # This function resets all motors and sensors. It should only be used
