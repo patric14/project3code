@@ -7,7 +7,7 @@ BP = brickpi3.BrickPi3()
 try:
     robot.fix_arm()
     print('arm fixed')
-    robot.weigh()
+    print('Weight: ', robot.weigh())
 except KeyboardInterrupt:
     pass
 
