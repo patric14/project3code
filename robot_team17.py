@@ -555,8 +555,6 @@ class RobotLibrary(object):
         print('Origin: (%.f, %.f)' % (origin[0], origin[1]))
         print('Notes: ', notes)
 
-<<<<<<< HEAD
-=======
     def set_motor(self, motor, deg):
         deg_diff = 6
         while deg_diff > 5:
@@ -611,7 +609,6 @@ class RobotLibrary(object):
 
             self.turn(0,180)
 
->>>>>>> 80c5bc8e72445521157956be399dbe7c7268cd50
     def kill(self):
 
         # This function resets all motors and sensors. It should only be used
