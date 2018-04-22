@@ -75,6 +75,7 @@ class RobotLibrary(object):
     RIGHT = 1
     UP = 2
     DOWN = 3
+    UTURN = 4
 
     # Other Constants
     STRAIGHT = 2
@@ -351,11 +352,25 @@ class RobotLibrary(object):
             numJunction = numJunction + 1
             typeJunction = self.JUNCT_RIGHT + typeJunction
 
+
+        if (typeJunction = self.JUNCT_STRAIGHT
         return typeJunction
 
-    def explore_space(self, unit):
-        junction = self.check_junction(unit)
-        junction = self.check_map(junction)
+    def explore_space(self, block_size, mapMatrix, direction, positionX,\
+                      positionY):
+        minimum = -1
+        while minimum < 0:
+            minimum = 0
+            for i in range(len(mapMatrix)):
+                current = min(mapMatrix[i])
+                if (current < minimum):
+                    minimum = current
+
+            while
+                junction = self.check_junction(block_size)
+                junction = self.check_map(junction, mapMatrix, direction, \
+                                          positionX, positionY)
+                direction = self.turn_junction(junction, direction)
 
 
     def check_map(self, junction, mapMatrix, direction, positionX, positionY):
@@ -392,7 +407,7 @@ class RobotLibrary(object):
 
         return junction
 
-    def turn_junction(self, junction):
+    def turn_junction(self, junction, direction):
 
         # This function turns the robot to the leftmost fork of a Junction
 
@@ -402,10 +417,75 @@ class RobotLibrary(object):
         (typeJunction == self.JUNCT_LEFT_STRAIGHT) or \
         (typeJunction == self.JUNCT_ALL_WAY):
             self.turn(self.LEFT, 90)
+            direction = self.change_direction(direction, self.LEFT)
         elif (typeJunction == self.JUNCT_RIGHT):
             self.turn(self.RIGHT, 90)
+            direction = self.change_direction(direction, self.RIGHT)
         elif typeJunction == self.JUNCT_DEAD_END:
-            self.turn(self.RIGHT, 180)
+            self.return_junction()
+            direction = self.change_direction(direction, self.UTURN)
+
+        return direction
+
+    def change_direction(self, direction, turnType):
+        if (direction == self.LEFT):
+            if (turnType == self.LEFT):
+                direction += 3
+            elif (turnType == self.RIGHT):
+                direction += 2
+            elif (turnType == self.UTURN):
+                direction += 1
+        elif (direction == self.RIGHT):
+            if (turnType == self.LEFT):
+                direction += 1
+            elif (turnType == self.RIGHT):
+                direction += 2
+            elif (turnType == self.UTURN):
+                direction -= 1
+        elif (direction == self.UP):
+            if (turnType == self.LEFT):
+                direction -= 2
+            elif (turnType == self.RIGHT):
+                direction -= 1
+            elif (turnType == self.UTURN):
+                direction += 1
+        elif (direction == self.DOWN):
+            if (turnType == self.LEFT):
+                direction -= 2
+            elif (turnType == self.RIGHT):
+                direction -= 3
+            elif (turnType == self.UTURN):
+                direction -= 1
+
+        return direction
+
+    def return_junction(pastX, pastY, mapMatrix, block_size, direction):
+
+        currentX = pastX[-1]
+        currentY = pastY[-1]
+        newX = pastX[-2]
+        newY = pastY[-2]
+        position = mapMatrix[currentX, currentY]
+
+        while(position == 1):
+            direction = self.drive_coord(block_size, direction, \
+                                         [currentX, currentY],\
+            [newX, newY])
+
+            currentX = newX
+            currentY = newY
+            position = mapMatrix[currentX, currentY]
+            del pastX[-1]
+            del pastY[-1]
+            newX = pastX[-2]
+            newY = pastY[-2]
+
+        junction = self.check_junction(block_size)
+        junction = self.check_map(junction, mapMatrix, direction, currentX, \
+                                  currentY)
+        self.turn_junction(junction)
+
+        return direction, junction
 
     def drive_coord(self, block_size, direction, initCoord, finalCoord):
 
@@ -419,16 +499,66 @@ class RobotLibrary(object):
         xTravel = finalX - initX
         yTravel = finalY - initY
 
-        if direction == self.LEFT or self.RIGHT:
-            self.drive_dist(xTravel, block_size)
-            self.turn(self.RIGHT, 90)
-            self.drive_dist(yTravel, block_size)
-        else:
-            self.drive_dist(yTravel, block_size)
-            self.turn(self.RIGHT, 90)
-            self.drive_dist(xTravel, block_size)
-
-        direction += 2
+        if (xTravel < 0):
+            if (direction == self.LEFT):
+                self.drive_dist(-xTravel, block_size)
+            else if (direction == self.UP):
+                self.turn(self.LEFT, 90)
+                direction -= 2
+                self.drive_dist(-xTravel, block_size)
+            else if (direction == self.DOWN):
+                self.turn(self.RIGHT, 90)
+                direction -= 3
+                self.drive_dist(-xTravel, block_size)
+            else if (direction == self.RIGHT):
+                self.turn(self.LEFT, 180)
+                direction -= 1
+                self.drive_dist(-xTravel, block_size)
+        if (xTravel > 0):
+            if (direction == self.RIGHT):
+                self.drive_dist(xTravel, block_size)
+            else if (direction == self.UP):
+                self.turn(self.RIGHT, 90)
+                direction -= 1
+                self.drive_dist(xTravel, block_size)
+            else if (direction == self.DOWN):
+                self.turn(self.LEFT, 90)
+                direction -= 2
+                self.drive_dist(xTravel, block_size)
+            else if (direction == self.LEFT):
+                self.turn(self.RIGHT, 180)
+                direction += 0
+                self.drive_dist(xTravel, block_size)
+        if (yTravel < 0):
+            if (direction == self.DOWN):
+                self.drive_dist(-yTravel, block_size)
+            else if (direction == self.LEFT):
+                self.turn(self.LEFT, 90)
+                direction += 3
+                self.drive_dist(-yTravel, block_size)
+            else if (direction == self.RIGHT):
+                self.turn(self.RIGHT, 90)
+                direction += 2
+                self.drive_dist(-yTravel, block_size)
+            else if (direction == self.UP):
+                self.turn(self.LEFT, 180)
+                direction += 1
+                self.drive_dist(-yTravel, block_size)
+        if (yTravel > 0):
+            if (direction == self.UP):
+                self.drive_dist(yTravel, block_size)
+            else if (direction == self.LEFT):
+                self.turn(self.RIGHT, 90)
+                direction += 2
+                self.drive_dist(yTravel, block_size)
+            else if (direction == self.RIGHT):
+                self.turn(self.LEFT, 90)
+                direction += 1
+                self.drive_dist(yTravel, block_size)
+            else if (direction == self.DOWN):
+                self.turn(self.RIGHT, 180)
+                direction -= 1
+                self.drive_dist(yTravel, block_size)
 
         return direction
 
