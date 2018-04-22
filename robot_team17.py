@@ -555,6 +555,63 @@ class RobotLibrary(object):
         print('Origin: (%.f, %.f)' % (origin[0], origin[1]))
         print('Notes: ', notes)
 
+<<<<<<< HEAD
+=======
+    def set_motor(self, motor, deg):
+        deg_diff = 6
+        while deg_diff > 5:
+            deg_diff = abs(BP.get_motor_encoder(self.ARM_MOTOR) - deg)
+            BP.set_motor_position(self.ARM_MOTOR, deg)
+
+    def fix_arm(self):
+        self.reset_encoder(self.ARM_MOTOR)
+        self.set_motor(self.ARM_MOTOR, 130)
+
+    def weight_calc(self, time):
+
+        torque = ((.785 / time) - 165) / -.4539
+
+        weight = (torque * 45) / (9.8)
+
+
+    def weigh(self):
+        scan = self.scanner()
+        if scan != self.WALL_COLOR:
+            self.drive_dist(1, -10) # cm
+            self.turn(self.LEFT, 180)
+            self.stop()
+            print('turn complete')
+            # lower the motor
+            self.set_motor(self.ARM_MOTOR, 0)
+
+            # drive towards resource
+            self.drive_dist(1, -15) # cm
+            self.stop()
+            print('driving to it')
+            initial_time = time.time()
+            # lift resource and keep track of time elapsed
+            initial_time = time.time()
+            BP.set_motor_power(self.ARM_MOTOR, 50)
+            while BP.get_motor_encoder(self.ARM_MOTOR) != 45:
+                timer = time.time() - initial_time
+            self.stop()
+
+            print('time: ', timer)
+
+            # set the resource back down
+            self.set_motor(self.ARM_MOTOR, 0)
+            self.stop()
+
+            # drive away from resource
+            self.drive_dist(1, 15) # cm
+
+            # lift hook back to initial position
+            self.set_motor(self.ARM_MOTOR, 130)
+            self.stop()
+
+            self.turn(0,180)
+
+>>>>>>> 80c5bc8e72445521157956be399dbe7c7268cd50
     def kill(self):
 
         # This function resets all motors and sensors. It should only be used
