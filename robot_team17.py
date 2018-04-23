@@ -453,6 +453,7 @@ class RobotLibrary(object):
         pastY = [positionY]
         mapMatrix[positionY][positionX]
         openSpace = 0
+        pastJunction = 0
         while (openSpace == 0):
             junction = self.check_junction(block_size)
             while junction == self.JUNCT_STRAIGHT:
@@ -468,7 +469,7 @@ class RobotLibrary(object):
                 mapMatrix[positionY][positionX] = openSpace
             direction, junction = self.turn_junction(junction, direction)
             self.drive_dist(1, block_size)
-            numJunction = (int(junction) / 100) + ((int(junction) % 100) / \
+            numJunction = (int(junction) / 100) + (((int(junction) % 100) / 10) / \
                 10) + ((int(junction) % 100) % 10)
             if (numJunction == -1):
                 numJunction = 1
@@ -477,7 +478,23 @@ class RobotLibrary(object):
             positionX, positionY)
             pastX.append(positionX)
             pastY.append(positionY)
+
+            junctionRight = int(abs(junction)) / 100
+            junctionLeft = (int(abs(junction)) % 100) / 10
+            pastJunctionRight = int(abs(junction)) / 100
+            pastJunctionLeft = (int(abs(junction)) % 100) / 10
+            if (junctionRight == 1 or junctionLeft == 1):
+                right = junctionRight * pastJunctionRight
+                left = junctionLeft * pastJunctionLeft
+            else:
+                right = 0
+                left = 0
+            openSpace = right + left
+            pastJunction = junction
+
+        mapMatrix[positionY][positionX] = 6
         return direction, positionX, positionY
+
 
 
     def change_position(self, direction, positionX, positionY):
@@ -513,8 +530,8 @@ class RobotLibrary(object):
         leftMap = -1 * (leftMap - 1)
         rightMap = -1 * (rightMap - 1)
 
-        forwardJunct = (int(abs(junction)) % 10) % 10
-        leftJunct = (int(abs(junction)) / 10) % 10
+        forwardJunct = (int(abs(junction)) % 100) % 10
+        leftJunct = (int(abs(junction)) % 100) / 10
         rightJunct = int(abs(junction)) / 100
 
         straight = int(forwardMap * forwardJunct)
