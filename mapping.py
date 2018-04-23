@@ -42,8 +42,8 @@ explore_space = False
 
 map_number, block_size, unit, origin, notes = setup()
 
-mapBlockX = mapLengthX / unit_length + 2
-mapBlockY = mapLengthY / unit_length + 2
+mapBlockX = int((mapLengthX / unit_length) + 2)
+mapBlockY = int((mapLengthY / unit_length) + 2)
 
 mapMatrix = robot.mapSetup(mapBlockX, mapBlockY)
 
