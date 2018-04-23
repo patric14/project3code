@@ -141,10 +141,10 @@ class RobotLibrary(object):
         return mapMatrix
 
     def resourceInfo(self):
-        
-        # This function creates an array to store resource location and 
+
+        # This function creates an array to store resource location and
         # information
-        
+
         header = []
         header.append('Parameter of interest')
         header.append('Parameter')
@@ -165,9 +165,9 @@ class RobotLibrary(object):
         nonHazardous.append('Mass (g)')
         for i in range(1, 3):
             nonHazardous.append(0)
-        
+
         resources = [header, biohazard, cesium, nonHazardous]
-        
+
         return resources
 
     def button(self):
@@ -395,13 +395,8 @@ class RobotLibrary(object):
             while junction == self.JUNCT_STRAIGHT:
                 self.drive_dist(1, block_size)
                 mapMatrix[positionY[positionX]] = 1
-<<<<<<< HEAD
-                positionX, positionY = \
-                self.change_position(direction, positionX, positionY)
-=======
                 positionX, positionY = self.change_position(direction, \
                 positionX, positionY)
->>>>>>> fe9fa1e0b2f6097e633305b615d1dde56b1f809b
                 pastX.append(positionX)
                 pastY.append(positionY)
                 junction = self.check_junction(block_size)
@@ -419,13 +414,8 @@ class RobotLibrary(object):
                 if (numJunction == -1):
                     numJunction = 1
                 mapMatrix[positionY[positionX]] = numJunction
-<<<<<<< HEAD
-                positionX, positionY = \
-                self.change_position(direction, positionX, positionY)
-=======
                 positionX, positionY = self.change_position(direction, \
                 positionX, positionY)
->>>>>>> fe9fa1e0b2f6097e633305b615d1dde56b1f809b
                 pastX.append(positionX)
                 pastY.append(positionY)
 
@@ -652,14 +642,14 @@ class RobotLibrary(object):
         mapOutput.write('Notes: ', notes)
         self.csv_write(mapOutput, mapMatrix)
         mapOutput.close()
-    
+
     def resource_output(self, resources):
-        
+
         # This function outputs a file of resources
-        
+
         fileName = 'resources.csv'
         resourceOutput = open(fileName, 'w')
-        
+
         self.csv_write(resourceOutput, resources)
         resourceOutput.close()
 
