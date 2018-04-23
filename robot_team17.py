@@ -590,6 +590,11 @@ class RobotLibrary(object):
 
         return direction
 
+    def csv_write(self, fid, array):
+
+        for row in array:
+            fid.writeline(','.join(row))
+
     def map_output(self, map_number, unit_length, unit, origin, notes):
 
         # This function outputs a map of resources and walls
@@ -604,7 +609,8 @@ class RobotLibrary(object):
         fileName = 'mapOutput.csv'
 
         mapOutput = open(fileName, 'w')
-
+        self.csv_write(mapOutput, mapMatrix)
+        mapOutput.close()
 
     def set_motor(self, motor, deg):
         deg_diff = 6
