@@ -32,21 +32,33 @@ import time
 
 robot = robot_team17.RobotLibrary()
 
-IN2FT = 12
-IN2CM = 2.54
-mapLengthX = 22 * IN2FT * IN2CM #cm
-mapLengthY = 12 * IN2FT * IN2CM #cm
+try:
 
-fully_mapped = False
-explore_space = False
+    IN2FT = 12
+    IN2CM = 2.54
+    mapLengthX = 22 * IN2FT * IN2CM #cm
+    mapLengthY = 12 * IN2FT * IN2CM #cm
+    
+    fully_mapped = False
+    explore_space = False
+    
+    map_number, block_size, unit, origin, notes = robot.setup()
+    
+    mapBlockX = mapLengthX / block_size
+    mapBlockY = mapLengthY / block_size
+    
+    positionX = origin[1]
+    positionY = origin[0]
+    
+    mapMatrix = robot.mapSetup(mapBlockX, mapBlockY)
+    
+    direction = robot.UP
+    
+    robot.explore_space(block_size, mapMatrix, direction, positionX,  positionY)
+    
+    robot.map_output(map_number, block_size, unit, origin, notes)
+    
+except:
+    pass
 
-map_number, block_size, unit, origin, notes = setup()
-
-mapBlockX = mapLengthX / unit_length
-mapBlockY = mapLengthY / unit_length
-
-map = robot.mapSetup(mapBlockX, mapBlockY)
-
-robot.explore_space(block_size, mapMatrix, direction, positionX,  positionY)
-
-map_output(map_number, unit_length, unit, origin, notes)
+robot.map_output()
