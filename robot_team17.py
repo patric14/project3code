@@ -31,11 +31,10 @@
 import brickpi3
 import grovepi
 from MPU9250 import MPU9250
-from math import pi, atan, acos, cos, sin
+from math import pi, atan, cos
 import time
 import numpy as np
 import IR_Functions as ir
-from csv
 
 # Object Creation
 BP = brickpi3.BrickPi3()
@@ -133,13 +132,43 @@ class RobotLibrary(object):
 
         return map_number, block_size, unit, origin, notes
 
-    def mapSetup(xSize, ySize):
+    def mapSetup(self, xSize, ySize):
 
         # This function sets up the map matrix
 
         mapMatrix = np.zeros(xSize, ySize)
 
         return mapMatrix
+
+    def resourceInfo(self):
+        
+        # This function creates an array to store resource location and 
+        # information
+        
+        header = []
+        header.append('Parameter of interest')
+        header.append('Parameter')
+        header.append('Resource X Coordinate')
+        header.append('Resource Y Coordinate')
+        biohazard = []
+        biohazard.append('Biohazard')
+        biohazard.append('Mass(g)')
+        for i in range(1, 3):
+            biohazard.append(0)
+        cesium = []
+        cesium.append('Cesium-137')
+        cesium.append('Radiation Strength (W)')
+        for i in range(1, 3):
+            cesium.append(0)
+        nonHazardous = []
+        nonHazardous.append('Non-Hazardous Waste')
+        nonHazardous.append('Mass (g)')
+        for i in range(1, 3):
+            nonHazardous.append(0)
+        
+        resources = [header, biohazard, cesium, nonHazardous]
+        
+        return resources
 
     def button(self):
 
@@ -348,13 +377,13 @@ class RobotLibrary(object):
 
         return typeJunction
 
-    def explore_space(self, block_size, mapMatrix, direction, positionX, \
+    def explore_space(self, block_size, mapMatrix, direction, positionX,\
                       positionY):
-        pastX = [startX]
-        pastY = [startY]
+        pastX = [positionX]
+        pastY = [positionY]
         mapMatrix[positionY[positionX]] = 10
         minimum = -1
-        while (positionX != pastX[0] or positionY != pastY[0]) or minimum < 0
+        while (positionX != pastX[0] or positionY != pastY[0]) or minimum < 0:
             minimum = 0
             for i in range(len(mapMatrix)):
                 current = min(mapMatrix[i])
@@ -363,10 +392,11 @@ class RobotLibrary(object):
                     break;
 
             junction = self.check_junction(block_size)
-            while junction = self.JUNCT_STRAIGHT:
+            while junction == self.JUNCT_STRAIGHT:
                 self.drive_dist(1, block_size)
                 mapMatrix[positionY[positionX]] = 1
-                positionX, positionY = self.change_position(direction, positionX, positionY)
+                positionX, positionY = \
+                self.change_position(direction, positionX, positionY)
                 pastX.append(positionX)
                 pastY.append(positionY)
                 junction = self.check_junction(block_size)
@@ -374,7 +404,7 @@ class RobotLibrary(object):
             junction = self.check_map(junction, mapMatrix, direction, \
             positionX, positionY)
             direction, junction = self.turn_junction(junction, direction)
-            if junction = self.JUNCT_DEAD_END:
+            if junction == self.JUNCT_DEAD_END:
                 self.return_junction(pastX, pastY, mapMatrix, block_size, \
                 direction)
             if (mapMatrix[pastY[-1][pastX[-1]]] != 10):
@@ -384,7 +414,8 @@ class RobotLibrary(object):
                 if (numJunction == -1):
                     numJunction = 1
                 mapMatrix[positionY[positionX]] = numJunction
-                positionX, positionY = self.change_position(direction, positionX, positionY)
+                positionX, positionY = \
+                self.change_position(direction, positionX, positionY)
                 pastX.append(positionX)
                 pastY.append(positionY)
 
@@ -423,7 +454,7 @@ class RobotLibrary(object):
         leftMap = -1 * (leftMap - 1)
         rightMap = -1 * (rightMap - 1)
 
-        forwardJunt = (int(abs(junction)) % 10) % 10
+        forwardJunct = (int(abs(junction)) % 10) % 10
         leftJunct = (int(abs(junction)) / 10) % 10
         rightJunct = int(abs(junction)) / 100
 
@@ -431,7 +462,7 @@ class RobotLibrary(object):
         left = int(leftMap * leftJunct)
         right = int(rightMap * rightJunct)
 
-        junction = -1 * (stright + (10 * left) + (100 * right))
+        junction = -1 * (straight + (10 * left) + (100 * right))
 
         return junction
 
@@ -487,7 +518,7 @@ class RobotLibrary(object):
 
         return direction
 
-    def return_junction(pastX, pastY, mapMatrix, block_size, direction):
+    def return_junction(self, pastX, pastY, mapMatrix, block_size, direction):
 
         currentX = pastX[-1]
         currentY = pastY[-1]
@@ -509,8 +540,8 @@ class RobotLibrary(object):
 
         if (position != 10):
             junction = self.check_junction(block_size)
-            junction = self.check_map(junction, mapMatrix, direction, currentX, \
-            currentY)
+            junction = self.check_map(junction, mapMatrix, direction, \
+                                      currentX, currentY)
             direction = self.turn_junction(junction)
 
         return direction, junction
@@ -595,22 +626,32 @@ class RobotLibrary(object):
         for row in array:
             fid.writeline(','.join(row))
 
-    def map_output(self, map_number, unit_length, unit, origin, notes):
+    def map_output(self, map_number, unit_length, unit, origin, notes, \
+                   mapMatrix):
 
         # This function outputs a map of resources and walls
-
-        print('Team: ', self.TEAM)
-        print('Map: ', map_number)
-        print('Unit Length: ', unit_length)
-        print('Unit: ', unit)
-        print('Origin: (%.f, %.f)' % (origin[0], origin[1]))
-        print('Notes: ', notes)
 
         fileName = 'mapOutput.csv'
 
         mapOutput = open(fileName, 'w')
+        mapOutput.write('Team: ', self.TEAM)
+        mapOutput.write('Map: ', map_number)
+        mapOutput.write('Unit Length: ', unit_length)
+        mapOutput.write('Unit: ', unit)
+        mapOutput.write('Origin: (%.f, %.f)' % (origin[1], origin[0]))
+        mapOutput.write('Notes: ', notes)
         self.csv_write(mapOutput, mapMatrix)
         mapOutput.close()
+    
+    def resource_output(self, resources):
+        
+        # This function outputs a file of resources
+        
+        fileName = 'resources.csv'
+        resourceOutput = open(fileName, 'w')
+        
+        self.csv_write(resourceOutput, resources)
+        resourceOutput.close()
 
     def set_motor(self, motor, deg):
         deg_diff = 6
@@ -680,7 +721,7 @@ class RobotLibrary(object):
 
         return mass
 
-    def avoid(self, currentX, currentY):
+    def avoid(self, currentX, currentY, mapMatrix):
 
         # Avoids the cesium and the MRI
 
@@ -694,8 +735,7 @@ class RobotLibrary(object):
         else:
             hazard = self.MRI
 
-        mapMatrix[currentX, currentY] = hazard
-
+        mapMatrix[currentY, currentX] = hazard
 
 
     def kill(self):

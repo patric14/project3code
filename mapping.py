@@ -47,10 +47,6 @@ mapBlockY = mapLengthY / unit_length
 
 map = robot.mapSetup(mapBlockX, mapBlockY)
 
-while explore_space == False:
-    junction = check_junction(unit)
-    explore_space =
-    robot.drive_dist(1, targetDist, block_size)
-    robot.turn_junction(block_size)
+robot.explore_space(block_size, mapMatrix, direction, positionX,  positionY)
 
 map_output(map_number, unit_length, unit, origin, notes)
