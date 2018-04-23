@@ -68,7 +68,7 @@ class RobotLibrary(object):
     WHEEL_RADIUS = 1.97
     TRACK_SEPARATION = 18
     ULTRASONIC = 2
-    ULTRASONIC_RIGHT = 130
+    ULTRASONIC_RIGHT = 120
     SCANTARGET = 5
 
     # Direction
