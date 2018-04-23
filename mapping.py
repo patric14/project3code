@@ -38,27 +38,29 @@ try:
     IN2CM = 2.54
     mapLengthX = 22 * IN2FT * IN2CM #cm
     mapLengthY = 12 * IN2FT * IN2CM #cm
-    
+
     fully_mapped = False
     explore_space = False
-    
+
     map_number, block_size, unit, origin, notes = robot.setup()
-    
+    resources = robot.resourceInfo()
+
     mapBlockX = mapLengthX / block_size
     mapBlockY = mapLengthY / block_size
-    
+
     positionX = origin[1]
     positionY = origin[0]
-    
+
     mapMatrix = robot.mapSetup(mapBlockX, mapBlockY)
-    
+
     direction = robot.UP
-    
+
     robot.explore_space(block_size, mapMatrix, direction, positionX,  positionY)
-    
+
     robot.map_output(map_number, block_size, unit, origin, notes)
-    
+
 except:
     pass
 
-robot.map_output()
+robot.map_output(map_number, block_size, unit, origin, notes, mapMatrix)
+robot.resource_output(resources)
