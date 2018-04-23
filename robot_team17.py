@@ -395,7 +395,7 @@ class RobotLibrary(object):
                       positionY):
         pastX = [positionX]
         pastY = [positionY]
-        mapMatrix[positionY[positionX]] = 10
+        mapMatrix[positionY, positionX] = 10
         minimum = -1
         while (positionX != pastX[0] or positionY != pastY[0]) or minimum < 0:
             minimum = 0
@@ -408,7 +408,7 @@ class RobotLibrary(object):
             junction, openSpace = self.check_junction(block_size)
             while junction == self.JUNCT_STRAIGHT:
                 self.drive_dist(1, block_size)
-                mapMatrix[positionY[positionX]] = 1
+                mapMatrix[positionY, positionX] = 1
                 positionX, positionY = self.change_position(direction, \
                 positionX, positionY)
                 pastX.append(positionX)
@@ -416,20 +416,20 @@ class RobotLibrary(object):
                 junction, openSpace = self.check_junction(block_size)
 
             if (openSpace > 0):
-                mapMatrix[positionY[positionX]] = openSpace
+                mapMatrix[positionY, positionX] = openSpace
             junction = self.check_map(junction, mapMatrix, direction, \
             positionX, positionY)
             direction, junction = self.turn_junction(junction, direction)
             if junction == self.JUNCT_DEAD_END:
                 self.return_junction(pastX, pastY, mapMatrix, block_size, \
                 direction)
-            if (mapMatrix[pastY[-1][pastX[-1]]] != 10):
+            if (mapMatrix[pastY[-1], pastX[-1]] != 10):
                 self.drive_dist(1, block_size)
                 numJunction = (int(junction) / 100) + ((int(junction) % 100) / \
                 10) + ((int(junction) % 100) % 10)
                 if (numJunction == -1):
                     numJunction = 1
-                mapMatrix[positionY[positionX]] = numJunction
+                mapMatrix[positionY, positionX] = numJunction
                 positionX, positionY = self.change_position(direction, \
                 positionX, positionY)
                 pastX.append(positionX)
