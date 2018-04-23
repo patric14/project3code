@@ -177,9 +177,9 @@ class RobotLibrary(object):
         print('IR Reading: ', sens2)
 
         if sens2 > 180:
-            return 1
+            return True
         else:
-            return 0
+            return False
 
     def magnet(self):
 
@@ -192,18 +192,17 @@ class RobotLibrary(object):
         print('Magnet Reading: ', magnet)
 
         if magnet < self.MRI_THRESHOLD:
-            return 1
+            return True
         else:
-            return 0
+            return False
 
     def stop(self):
         BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
-                         self.ULTRASONIC_MOTOR, 0)
+                         self.ULTRASONIC_MOTOR + self.ARM_MOTOR, 0)
 
     def reset_encoder(self, motor):
 
-        BP.offset_motor_encoder(motor, \
-                                BP.get_motor_encoder(motor))
+        BP.offset_motor_encoder(motor, .get_motor_encoder(motor))
 
     def drive_dist(self, num_blocks, block_size):
 
@@ -635,6 +634,22 @@ class RobotLibrary(object):
             self.turn(0,180)
 
         return mass
+
+    def avoid(self, currentX, currentY):
+
+        # Avoids Cesium and MRI and marks their position
+
+        mri_detected = self.magnet()
+        cesium_detected = self.ir_read()
+
+        if mri_detected or cesium_detected:
+            self.stop()
+            if direction == self.UP:
+                currentX += currentX
+            if mri_detected:
+                '''mark next block as mri'''
+            else:
+                '''mark next block as cesium'''
 
     def kill(self):
 
