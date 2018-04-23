@@ -35,6 +35,7 @@ from math import pi, atan, acos, cos, sin
 import time
 import numpy as np
 import IR_Functions as ir
+from csv
 
 # Object Creation
 BP = brickpi3.BrickPi3()
@@ -137,6 +138,7 @@ class RobotLibrary(object):
         # This function sets up the map matrix
 
         mapMatrix = np.zeros(xSize, ySize)
+
         return mapMatrix
 
     def button(self):
@@ -176,9 +178,9 @@ class RobotLibrary(object):
         print('IR Reading: ', sens2)
 
         if sens2 > 180:
-            return 1
+            return True
         else:
-            return 0
+            return False
 
     def magnet(self):
 
@@ -191,9 +193,9 @@ class RobotLibrary(object):
         print('Magnet Reading: ', magnet)
 
         if magnet < self.MRI_THRESHOLD:
-            return 1
+            return True
         else:
-            return 0
+            return False
 
     def stop(self):
         BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
@@ -266,6 +268,7 @@ class RobotLibrary(object):
             positionPreviousLeft = positionCurrentLeft
             positionPreviousRight = positionCurrentRight
             previousDist = currentDist
+
         self.stop()
 
     def turn(self, direction, degrees):
@@ -347,19 +350,43 @@ class RobotLibrary(object):
 
     def explore_space(self, block_size, mapMatrix, direction, positionX, \
                       positionY):
-        junction = self.check_junction(block_size)
-        while junction < self.JUNCT_DEAD_END
+        pastX = [startX]
+        pastY = [startY]
+        mapMatrix[positionY[positionX]] = 10
+        minimum = -1
+        while (positionX != pastX[0] or positionY != pastY[0]) or minimum < 0
+            minimum = 0
+            for i in range(len(mapMatrix)):
+                current = min(mapMatrix[i])
+                if (current < minimum):
+                    minimum = current
+                    break;
+
+            junction = self.check_junction(block_size)
             while junction = self.JUNCT_STRAIGHT:
                 self.drive_dist(1, block_size)
                 mapMatrix[positionY[positionX]] = 1
-                positionX, positionY = self.change_position()
+                positionX, positionY = self.change_position(direction, positionX, positionY)
+                pastX.append(positionX)
+                pastY.append(positionY)
                 junction = self.check_junction(block_size)
 
             junction = self.check_map(junction, mapMatrix, direction, \
             positionX, positionY)
             direction, junction = self.turn_junction(junction, direction)
-            numJunction = (junction / 100) + ((junction % 100) / 10) + (junction )
-
+            if junction = self.JUNCT_DEAD_END:
+                self.return_junction(pastX, pastY, mapMatrix, block_size, \
+                direction)
+            if (mapMatrix[pastY[-1][pastX[-1]]] != 10):
+                self.drive_dist(1, block_size)
+                numJunction = (int(junction) / 100) + ((int(junction) % 100) / \
+                10) + ((int(junction) % 100) % 10)
+                if (numJunction == -1):
+                    numJunction = 1
+                mapMatrix[positionY[positionX]] = numJunction
+                positionX, positionY = self.change_position(direction, positionX, positionY)
+                pastX.append(positionX)
+                pastY.append(positionY)
 
         return mapMatrix, direction, positionX, positionY
 
@@ -423,9 +450,10 @@ class RobotLibrary(object):
             self.turn(self.RIGHT, 90)
             direction = self.change_direction(direction, self.RIGHT)
         elif typeJunction == self.JUNCT_DEAD_END:
-            direction, junction = self.return_junction()
+            self.turn(self.LEFT, 180)
+            direction = self.change_direction(direction, self.UTURN)
 
-        return direction, junction
+        return direction
 
     def change_direction(self, direction, turnType):
         if (direction == self.LEFT):
@@ -479,10 +507,11 @@ class RobotLibrary(object):
             newX = pastX[-2]
             newY = pastY[-2]
 
-        junction = self.check_junction(block_size)
-        junction = self.check_map(junction, mapMatrix, direction, currentX, \
-        currentY)
-        direction, junction = self.turn_junction(junction)
+        if (position != 10):
+            junction = self.check_junction(block_size)
+            junction = self.check_map(junction, mapMatrix, direction, currentX, \
+            currentY)
+            direction = self.turn_junction(junction)
 
         return direction, junction
 
@@ -572,6 +601,11 @@ class RobotLibrary(object):
         print('Origin: (%.f, %.f)' % (origin[0], origin[1]))
         print('Notes: ', notes)
 
+        fileName = 'mapOutput.csv'
+
+        mapOutput = open(fileName, 'w')
+
+
     def set_motor(self, motor, deg):
         deg_diff = 6
         while deg_diff > 5:
@@ -639,6 +673,24 @@ class RobotLibrary(object):
             self.turn(0,180)
 
         return mass
+
+    def avoid(self, currentX, currentY):
+
+        # Avoids the cesium and the MRI
+
+        mri_detected = self.magnet()
+        cesium_detected = self.ir_read()
+
+        if mri_detected or cesium_detected:
+            self.stop()
+        if cesium_detected:
+            hazard = self.RADIATION
+        else:
+            hazard = self.MRI
+
+        mapMatrix[currentX, currentY] = hazard
+
+
 
     def kill(self):
 
