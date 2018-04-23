@@ -391,6 +391,26 @@ class RobotLibrary(object):
             typeJunction = self.JUNCT_DEAD_END
         return typeJunction, openSpace
 
+        def turn_junction(self, junction, direction):
+
+            # This function turns the robot to the leftmost fork of a Junction
+
+            typeJunction = junction
+            if (typeJunction == self.JUNCT_LEFT) or \
+            (typeJunction == self.JUNCT_LEFT_RIGHT) or \
+            (typeJunction == self.JUNCT_LEFT_STRAIGHT) or \
+            (typeJunction == self.JUNCT_ALL_WAY):
+                self.turn(self.LEFT, 90)
+                direction = self.change_direction(direction, self.LEFT)
+            elif (typeJunction == self.JUNCT_RIGHT):
+                self.turn(self.RIGHT, 90)
+                direction = self.change_direction(direction, self.RIGHT)
+            elif typeJunction == self.JUNCT_DEAD_END:
+                self.turn(self.LEFT, 180)
+                direction = self.change_direction(direction, self.UTURN)
+
+            return direction, junction
+
     def explore_space(self, block_size, mapMatrix, direction, positionX,\
                       positionY):
         pastX = [positionX]
@@ -482,26 +502,6 @@ class RobotLibrary(object):
 
         return junction
 
-    def turn_junction(self, junction, direction):
-
-        # This function turns the robot to the leftmost fork of a Junction
-
-        typeJunction = junction
-        if (typeJunction == self.JUNCT_LEFT) or \
-        (typeJunction == self.JUNCT_LEFT_RIGHT) or \
-        (typeJunction == self.JUNCT_LEFT_STRAIGHT) or \
-        (typeJunction == self.JUNCT_ALL_WAY):
-            self.turn(self.LEFT, 90)
-            direction = self.change_direction(direction, self.LEFT)
-        elif (typeJunction == self.JUNCT_RIGHT):
-            self.turn(self.RIGHT, 90)
-            direction = self.change_direction(direction, self.RIGHT)
-        elif typeJunction == self.JUNCT_DEAD_END:
-            self.turn(self.LEFT, 180)
-            direction = self.change_direction(direction, self.UTURN)
-
-        return direction
-
     def change_direction(self, direction, turnType):
         if (direction == self.LEFT):
             if (turnType == self.LEFT):
@@ -558,7 +558,7 @@ class RobotLibrary(object):
             junction, openSpace = self.check_junction(block_size)
             junction, openSpace = self.check_map(junction, mapMatrix, direction, \
                                       currentX, currentY)
-            direction = self.turn_junction(junction)
+            direction, junction = self.turn_junction(junction)
 
         return direction, junction
 
