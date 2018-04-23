@@ -40,12 +40,12 @@ mapLengthY = 12 * IN2FT * IN2CM #cm
 fully_mapped = False
 explore_space = False
 
-map_number, block_size, unit, origin, notes = robot.setup()
-'''map_number = 1
+#map_number, block_size, unit, origin, notes = robot.setup()
+map_number = 1
 block_size = 40
 unit = 'cm'
 origin = [0, 0]
-notes = 'notes''''
+notes = 'notes'
 
 resources = robot.resourceInfo()
 
@@ -80,8 +80,8 @@ try:
     robot.map_output(map_number, block_size, unit, origin, notes)
 except KeyboardInterrupt:
     print('Program Interrupted')
-except:
-    print('Error')
+'''except:
+    print('Error')'''
 
 robot.map_output(map_number, block_size, unit, origin, notes, mapMatrix)
 robot.resource_output(resources, map_number, notes)
