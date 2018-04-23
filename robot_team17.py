@@ -68,7 +68,7 @@ class RobotLibrary(object):
     WHEEL_RADIUS = 1.97
     TRACK_SEPARATION = 18
     ULTRASONIC = 2
-    ULTRASONIC_RIGHT = 142
+    ULTRASONIC_RIGHT = 130
     SCANTARGET = 5
 
     # Direction
@@ -350,7 +350,7 @@ class RobotLibrary(object):
             time.sleep(.01)
 
         self.stop()
-        if (total > SCANTARGET):
+        if (total > self.SCANTARGET):
             output = 1
         else:
             output = 0
@@ -450,21 +450,21 @@ class RobotLibrary(object):
 
     def check_map(self, junction, mapMatrix, direction, positionX, positionY):
         if (direction == self.LEFT):
-            forwardMap = mapMatrix[positionX - 1, positionY]
-            leftMap = mapMatrix[positionX, positionY - 1]
-            rightMap = mapMatrix[positionX, positionY + 1]
+            forwardMap = mapMatrix[positionX - 1][positionY]
+            leftMap = mapMatrix[positionX][positionY - 1]
+            rightMap = mapMatrix[positionX][positionY + 1]
         if (direction == self.UP):
-            forwardMap = mapMatrix[positionX, positionY + 1]
-            leftMap = mapMatrix[positionX - 1, positionY]
-            rightMap = mapMatrix[positionX + 1, positionY]
+            forwardMap = mapMatrix[positionX][positionY + 1]
+            leftMap = mapMatrix[positionX - 1][positionY]
+            rightMap = mapMatrix[positionX + 1][positionY]
         if (direction == self.RIGHT):
-            forwardMap = mapMatrix[positionX + 1, positionY]
-            leftMap = mapMatrix[positionX, positionY + 1]
-            rightMap = mapMatrix[positionX, positionY - 1]
+            forwardMap = mapMatrix[positionX + 1][positionY]
+            leftMap = mapMatrix[positionX][positionY + 1]
+            rightMap = mapMatrix[positionX][positionY - 1]
         if (direction == self.DOWN):
-            forwardMap = mapMatrix[positionX, positionY - 1]
-            leftMap = mapMatrix[positionX + 1, positionY]
-            rightMap = mapMatrix[positionX - 1, positionY]
+            forwardMap = mapMatrix[positionX][positionY - 1]
+            leftMap = mapMatrix[positionX + 1][positionY]
+            rightMap = mapMatrix[positionX - 1][positionY]
 
         forwardMap = -1 * (forwardMap - 1)
         leftMap = -1 * (leftMap - 1)
