@@ -61,8 +61,22 @@ direction = robot.UP
 
 try:
 
-    robot.explore_space(block_size, mapMatrix, direction, positionX,  positionY)
+    direction, positionX, positionY = robot.explore_space(block_size, mapMatrix, direction, positionX,  positionY)
 
+    openY = 0
+    openX = 0
+    for i in range(len(mapMatrix)):
+        current1 = mapMatrix[i]
+        for j in range(len(current1)):
+            current2 = current1[j]
+            if (current2 == 6):
+                openY = current1
+                openX = current2
+                current1 = len(mapMatrix)
+                current2 = len(current1)
+
+    if (openY != 0):
+        robot.return_open_space()
     robot.map_output(map_number, block_size, unit, origin, notes)
 except KeyboardInterrupt:
     print('Program Interrupted')

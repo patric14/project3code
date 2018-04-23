@@ -69,6 +69,7 @@ class RobotLibrary(object):
     TRACK_SEPARATION = 18
     ULTRASONIC = 2
     ULTRASONIC_RIGHT = 142
+    SCANTARGET = 5
 
     # Direction
     LEFT = 0
@@ -326,7 +327,7 @@ class RobotLibrary(object):
             #print('traveled:', deg_traveled)
         self.stop()
 
-    def turn_ultrasonic(self, direction):
+    def turn_ultrasonic(self, direction, block_size):
 
         print('Rotating Ultrasonic.')
 
@@ -338,13 +339,23 @@ class RobotLibrary(object):
         self.reset_encoder(self.ULTRASONIC_MOTOR)
 
         diff = 0
+        total = 0
 
         while diff < self.ULTRASONIC_RIGHT:
             BP.set_motor_power(self.ULTRASONIC_MOTOR, power)
             diff = abs(BP.get_motor_encoder(self.ULTRASONIC_MOTOR))
+            dist = self.check_distance()
+            if (dist > block_size):
+                total += 1
             time.sleep(.01)
 
         self.stop()
+        if (total > SCANTARGET):
+            output = 1
+        else:
+            output = 0
+
+        return(output)
 
     def check_distance(self):
         dist = grovepi.ultrasonicRead(self.ULTRASONIC)
@@ -359,12 +370,12 @@ class RobotLibrary(object):
         print('Determining junction type')
 
         leftDist = self.check_distance()
-        self.turn_ultrasonic(self.RIGHT)
+        openSpace = self.turn_ultrasonic(self.RIGHT, unit)
         forwardDist = self.check_distance()
-        self.turn_ultrasonic(self.RIGHT)
+        openSpace += self.turn_ultrasonic(self.RIGHT, unit)
         rightDist = self.check_distance()
-        self.turn_ultrasonic(self.LEFT)
-        self.turn_ultrasonic(self.LEFT)
+        self.turn_ultrasonic(self.LEFT, unit)
+        self.turn_ultrasonic(self.LEFT, unit)
 
         typeJunction = self.JUNCT_DEAD_END
 
@@ -375,7 +386,10 @@ class RobotLibrary(object):
         if rightDist > unit:
             typeJunction = self.JUNCT_RIGHT + typeJunction
 
-        return typeJunction
+        if (openSpace > 0):
+            openSpace = 6
+            typeJunction = self.JUNCT_DEAD_END
+        return typeJunction, openSpace
 
     def explore_space(self, block_size, mapMatrix, direction, positionX,\
                       positionY):
@@ -391,7 +405,7 @@ class RobotLibrary(object):
                     minimum = current
                     break;
 
-            junction = self.check_junction(block_size)
+            junction, openSpace = self.check_junction(block_size)
             while junction == self.JUNCT_STRAIGHT:
                 self.drive_dist(1, block_size)
                 mapMatrix[positionY[positionX]] = 1
@@ -399,8 +413,10 @@ class RobotLibrary(object):
                 positionX, positionY)
                 pastX.append(positionX)
                 pastY.append(positionY)
-                junction = self.check_junction(block_size)
+                junction, openSpace = self.check_junction(block_size)
 
+            if (openSpace > 0):
+                mapMatrix[positionY[positionX]] = openSpace
             junction = self.check_map(junction, mapMatrix, direction, \
             positionX, positionY)
             direction, junction = self.turn_junction(junction, direction)
@@ -539,8 +555,8 @@ class RobotLibrary(object):
             newY = pastY[-2]
 
         if (position != 10):
-            junction = self.check_junction(block_size)
-            junction = self.check_map(junction, mapMatrix, direction, \
+            junction, openSpace = self.check_junction(block_size)
+            junction, openSpace = self.check_map(junction, mapMatrix, direction, \
                                       currentX, currentY)
             direction = self.turn_junction(junction)
 
