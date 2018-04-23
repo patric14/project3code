@@ -32,35 +32,44 @@ import time
 
 robot = robot_team17.RobotLibrary()
 
+IN2FT = 12
+IN2CM = 2.54
+mapLengthX = 22 * IN2FT * IN2CM #cm
+mapLengthY = 12 * IN2FT * IN2CM #cm
+
+fully_mapped = False
+explore_space = False
+
+map_number, block_size, unit, origin, notes = robot.setup()
+'''map_number = 1
+block_size = 40
+unit = 'cm'
+origin = [0, 0]
+notes = 'notes''''
+
+resources = robot.resourceInfo()
+
+mapBlockX = int(mapLengthX / block_size + 2)
+mapBlockY = int(mapLengthY / block_size + 2)
+
+positionX = origin[0]
+positionY = origin[1]
+
+mapMatrix = robot.mapSetup(mapBlockX, mapBlockY)
+
+direction = robot.UP
+
 try:
-
-    IN2FT = 12
-    IN2CM = 2.54
-    mapLengthX = 22 * IN2FT * IN2CM #cm
-    mapLengthY = 12 * IN2FT * IN2CM #cm
-
-    fully_mapped = False
-    explore_space = False
-
-    map_number, block_size, unit, origin, notes = robot.setup()
-    resources = robot.resourceInfo()
-
-    mapBlockX = mapLengthX / block_size
-    mapBlockY = mapLengthY / block_size
-
-    positionX = origin[1]
-    positionY = origin[0]
-
-    mapMatrix = robot.mapSetup(mapBlockX, mapBlockY)
-
-    direction = robot.UP
 
     robot.explore_space(block_size, mapMatrix, direction, positionX,  positionY)
 
     robot.map_output(map_number, block_size, unit, origin, notes)
-
+except KeyboardInterrupt:
+    print('Program Interrupted')
 except:
-    pass
+    print('Error')
 
 robot.map_output(map_number, block_size, unit, origin, notes, mapMatrix)
-robot.resource_output(resources)
+robot.resource_output(resources, map_number, notes)
+
+robot.kill()

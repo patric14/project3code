@@ -136,7 +136,7 @@ class RobotLibrary(object):
 
         # This function sets up the map matrix
 
-        mapMatrix = np.zeros(xSize, ySize)
+        mapMatrix = [[0 for col in range(ySize)] for row in range(xSize)]
 
         return mapMatrix
 
@@ -624,7 +624,10 @@ class RobotLibrary(object):
     def csv_write(self, fid, array):
 
         for row in array:
-            fid.writeline(','.join(row))
+            line = str(row)
+            line = line.strip('[]')
+            fid.write(line)
+            fid.write('\n')
 
     def map_output(self, map_number, unit_length, unit, origin, notes, \
                    mapMatrix):
@@ -634,22 +637,24 @@ class RobotLibrary(object):
         fileName = 'mapOutput.csv'
 
         mapOutput = open(fileName, 'w')
-        mapOutput.write('Team: ', self.TEAM)
-        mapOutput.write('Map: ', map_number)
-        mapOutput.write('Unit Length: ', unit_length)
-        mapOutput.write('Unit: ', unit)
-        mapOutput.write('Origin: (%.f, %.f)' % (origin[1], origin[0]))
-        mapOutput.write('Notes: ', notes)
+        mapOutput.write('Team: %d\n' % self.TEAM)
+        mapOutput.write('Map: %d\n' % map_number)
+        mapOutput.write('Unit Length: %d\n' % unit_length)
+        mapOutput.write('Unit: %s\n' % unit)
+        mapOutput.write('Origin: (%.f, %.f)\n' % (origin[1], origin[0]))
+        mapOutput.write('Notes: %s\n' % notes)
         self.csv_write(mapOutput, mapMatrix)
         mapOutput.close()
 
-    def resource_output(self, resources):
+    def resource_output(self, resources, map_number, notes):
 
         # This function outputs a file of resources
 
         fileName = 'resources.csv'
         resourceOutput = open(fileName, 'w')
-
+        resourceOutput.write('Team %d\n' % self.TEAM)
+        resourceOutput.write('Map %d\n' % map_number)
+        resourceOutput.write('Notes: %s\n\n' % notes)
         self.csv_write(resourceOutput, resources)
         resourceOutput.close()
 
@@ -663,22 +668,22 @@ class RobotLibrary(object):
         self.reset_encoder(self.ARM_MOTOR)
         self.set_motor(self.ARM_MOTOR, 130)
 
-    def mass(self, time):
+    def mass(self, time, power):
 
         # time in s
-        torque = ((.785 / time) - 165) / -.4539 # N * m
         grav = 9.8 # m/s^2
         height = 5.5 # cm
-        angle = 45 # degrees
+        angle = 45 / 360 * 2 * pi # radians
+        torque = ((angle / time) - 165) / (-.4539 * .01 * power) # N * m
 
-        mass = torque * angle / height * grav
+        mass = torque * angle / (height * grav) * 1000 # grams
 
         return mass
 
     def weigh(self):
 
         # This function detects
-
+        power = 10
         mass = 'error massing'
 
         scan = self.scanner()
@@ -697,12 +702,12 @@ class RobotLibrary(object):
             initial_time = time.time()
             # lift resource and keep track of time elapsed
             initial_time = time.time()
-            BP.set_motor_power(self.ARM_MOTOR, 50)
+            BP.set_motor_power(self.ARM_MOTOR, power)
             while BP.get_motor_encoder(self.ARM_MOTOR) != 45:
                 timer = time.time() - initial_time
             self.stop()
 
-            mass = self.mass(timer)
+            mass = self.mass(timer, power)
 
             print('time: ', timer)
 
