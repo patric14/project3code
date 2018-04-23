@@ -63,7 +63,7 @@ direction = robot.UP
 
 try:
 
-    direction, positionX, positionY = robot.explore_space(block_size, mapMatrix, direction, positionX,  positionY)
+    direction, positionX, positionY = robot.explore_space_simple(block_size, mapMatrix, direction, positionX,  positionY)
 
     openY = 0
     openX = 0

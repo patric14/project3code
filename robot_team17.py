@@ -89,10 +89,10 @@ class RobotLibrary(object):
     MRI_THRESHOLD = -39
     DIST_DEG = (2 * pi * WHEEL_RADIUS) / 360
     wheel_track_ratio = TRACK_SEPARATION / WHEEL_RADIUS
-    FULL_TURN = 2055
+    FULL_TURN = 1920
     DEG_TURN = FULL_TURN / 360
-    POWER = 75
-    KP = 3
+    POWER = 50
+    KP = 4
 
     # Junction types
     JUNCT_DEAD_END = 0
@@ -241,18 +241,19 @@ class RobotLibrary(object):
         # This function drives the robot at the input speed for the input
         # distance
 
-        targetDist = .5 * block_size
-
-        print('Traveling %f blocks.' % num_blocks)
-
-        distance = float(num_blocks) * block_size
-
-        if distance < 0:
+        if num_blocks * block_size < 0:
             direction = -1
         else:
             direction = 1
 
-        distance = abs(distance)
+        num_blocks = abs(num_blocks)
+        block_size = abs(block_size)
+
+        targetDist = .5 * float(block_size)
+
+        print('Traveling %f blocks.' % num_blocks)
+
+        distance = float(num_blocks) * block_size
 
         self.reset_encoder(self.LEFT_MOTOR)
         self.reset_encoder(self.RIGHT_MOTOR)
@@ -283,7 +284,7 @@ class RobotLibrary(object):
                                                   positionPreviousRight)
             distDrive = (leftDistDrive + rightDistDrive) / 2
 
-            angle = atan(distDiff / distDrive)
+            angle = atan(distDiff / (distDrive + 0.01))
             distPerp = currentDist * cos(abs(angle))
             distParallel = distDrive * cos(abs(angle))
             distTotal = distTotal + distParallel
@@ -339,23 +340,14 @@ class RobotLibrary(object):
         self.reset_encoder(self.ULTRASONIC_MOTOR)
 
         diff = 0
-        total = 0
-
         while diff < self.ULTRASONIC_RIGHT:
             BP.set_motor_power(self.ULTRASONIC_MOTOR, power)
             diff = abs(BP.get_motor_encoder(self.ULTRASONIC_MOTOR))
-            dist = self.check_distance()
-            if (dist > block_size):
-                total += 1
             time.sleep(.01)
 
         self.stop()
-        if (total > self.SCANTARGET):
-            output = 1
-        else:
-            output = 0
 
-        return(output)
+        return
 
     def check_distance(self):
         dist = grovepi.ultrasonicRead(self.ULTRASONIC)
@@ -370,9 +362,9 @@ class RobotLibrary(object):
         print('Determining junction type')
 
         leftDist = self.check_distance()
-        openSpace = self.turn_ultrasonic(self.RIGHT, unit)
+        self.turn_ultrasonic(self.RIGHT, unit)
         forwardDist = self.check_distance()
-        openSpace += self.turn_ultrasonic(self.RIGHT, unit)
+        self.turn_ultrasonic(self.RIGHT, unit)
         rightDist = self.check_distance()
         self.turn_ultrasonic(self.LEFT, unit)
         self.turn_ultrasonic(self.LEFT, unit)
@@ -386,10 +378,7 @@ class RobotLibrary(object):
         if rightDist > unit:
             typeJunction = self.JUNCT_RIGHT + typeJunction
 
-        if (openSpace > 0):
-            openSpace = 6
-            typeJunction = self.JUNCT_DEAD_END
-        return typeJunction, openSpace
+        return typeJunction
 
     def turn_junction(self, junction, direction):
 
@@ -457,6 +446,39 @@ class RobotLibrary(object):
                 pastY.append(positionY)
 
         return direction, positionX, positionY
+
+    def explore_space_simple(self, block_size, mapMatrix, direction, positionX, \
+        positionY):
+        pastX = [positionX]
+        pastY = [positionY]
+        mapMatrix[positionY][positionX]
+        openSpace = 0
+        while (openSpace == 0):
+            junction = self.check_junction(block_size)
+            while junction == self.JUNCT_STRAIGHT:
+                self.drive_dist(1, block_size)
+                if (positionX != pastX[0]) or (positionY != pastY[0]):
+                    mapMatrix[positionY][positionX] = 1
+                positionX, positionY = self.change_position(direction, \
+                positionX, positionY)
+                pastX.append(positionX)
+                pastY.append(positionY)
+                junction = self.check_junction(block_size)
+            if (openSpace > 0):
+                mapMatrix[positionY][positionX] = openSpace
+            direction, junction = self.turn_junction(junction, direction)
+            self.drive_dist(1, block_size)
+            numJunction = (int(junction) / 100) + ((int(junction) % 100) / \
+                10) + ((int(junction) % 100) % 10)
+            if (numJunction == -1):
+                numJunction = 1
+            mapMatrix[positionY][positionX] = numJunction
+            positionX, positionY = self.change_position(direction, \
+            positionX, positionY)
+            pastX.append(positionX)
+            pastY.append(positionY)
+        return direction, positionX, positionY
+
 
     def change_position(self, direction, positionX, positionY):
         if (direction == self.LEFT):
