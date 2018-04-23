@@ -354,7 +354,7 @@ class RobotLibrary(object):
         pastY = [startY]
         mapMatrix[positionY[positionX]] = 10
         minimum = -1
-        while (positionX != pastX[0] or positionY != pastY[0]) or minimum < 0
+        while (positionX != pastX[0] or positionY != pastY[0]) or minimum < 0:
             minimum = 0
             for i in range(len(mapMatrix)):
                 current = min(mapMatrix[i])
