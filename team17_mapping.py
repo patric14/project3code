@@ -40,20 +40,22 @@ mapLengthY = 12 * IN2FT * IN2CM #cm
 fully_mapped = False
 explore_space = False
 
-#map_number, block_size, unit, origin, notes = robot.setup()
+map_number, block_size, unit, origin, notes = robot.setup()
+'''
 map_number = 1
-block_size = 40
+block_size = 30.5
 unit = 'cm'
 origin = [0, 0]
 notes = 'notes'
+'''
 
 resources = robot.resourceInfo()
 
 mapBlockX = int(mapLengthX / block_size + 2)
 mapBlockY = int(mapLengthY / block_size + 2)
 
-positionX = origin[0]
-positionY = origin[1]
+positionX = int(origin[0])
+positionY = int(origin[1])
 
 mapMatrix = robot.mapSetup(mapBlockX, mapBlockY)
 

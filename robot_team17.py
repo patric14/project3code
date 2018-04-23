@@ -391,25 +391,25 @@ class RobotLibrary(object):
             typeJunction = self.JUNCT_DEAD_END
         return typeJunction, openSpace
 
-        def turn_junction(self, junction, direction):
+    def turn_junction(self, junction, direction):
 
-            # This function turns the robot to the leftmost fork of a Junction
+        # This function turns the robot to the leftmost fork of a Junction
 
-            typeJunction = junction
-            if (typeJunction == self.JUNCT_LEFT) or \
-            (typeJunction == self.JUNCT_LEFT_RIGHT) or \
-            (typeJunction == self.JUNCT_LEFT_STRAIGHT) or \
-            (typeJunction == self.JUNCT_ALL_WAY):
-                self.turn(self.LEFT, 90)
-                direction = self.change_direction(direction, self.LEFT)
-            elif (typeJunction == self.JUNCT_RIGHT):
-                self.turn(self.RIGHT, 90)
-                direction = self.change_direction(direction, self.RIGHT)
-            elif typeJunction == self.JUNCT_DEAD_END:
-                self.turn(self.LEFT, 180)
-                direction = self.change_direction(direction, self.UTURN)
+        typeJunction = junction
+        if (typeJunction == self.JUNCT_LEFT) or \
+        (typeJunction == self.JUNCT_LEFT_RIGHT) or \
+        (typeJunction == self.JUNCT_LEFT_STRAIGHT) or \
+        (typeJunction == self.JUNCT_ALL_WAY):
+            self.turn(self.LEFT, 90)
+            direction = self.change_direction(direction, self.LEFT)
+        elif (typeJunction == self.JUNCT_RIGHT):
+            self.turn(self.RIGHT, 90)
+            direction = self.change_direction(direction, self.RIGHT)
+        elif typeJunction == self.JUNCT_DEAD_END:
+            self.turn(self.LEFT, 180)
+            direction = self.change_direction(direction, self.UTURN)
 
-            return direction, junction
+        return direction, junction
 
     def explore_space(self, block_size, mapMatrix, direction, positionX,\
                       positionY):
@@ -428,7 +428,8 @@ class RobotLibrary(object):
             junction, openSpace = self.check_junction(block_size)
             while junction == self.JUNCT_STRAIGHT:
                 self.drive_dist(1, block_size)
-                mapMatrix[positionY][positionX] = 1
+                if (positionX != pastX[0]) or (positionY != pastY[0]):
+                    mapMatrix[positionY][positionX] = 1
                 positionX, positionY = self.change_position(direction, \
                 positionX, positionY)
                 pastX.append(positionX)
@@ -443,7 +444,7 @@ class RobotLibrary(object):
             if junction == self.JUNCT_DEAD_END:
                 self.return_junction(pastX, pastY, mapMatrix, block_size, \
                 direction)
-            if (mapMatrix[pastY[-1], pastX[-1]] != 10):
+            if (mapMatrix[pastY[-1]][pastX[-1]] != 10):
                 self.drive_dist(1, block_size)
                 numJunction = (int(junction) / 100) + ((int(junction) % 100) / \
                 10) + ((int(junction) % 100) % 10)
@@ -540,7 +541,7 @@ class RobotLibrary(object):
         currentY = pastY[-1]
         newX = pastX[-2]
         newY = pastY[-2]
-        position = mapMatrix[currentX, currentY]
+        position = mapMatrix[currentX][currentY]
 
         while(position == 1):
             direction = self.drive_coord(block_size, direction, [currentX, \
