@@ -90,8 +90,7 @@ class RobotLibrary(object):
     wheel_track_ratio = TRACK_SEPARATION / WHEEL_RADIUS
     FULL_TURN = 2055
     DEG_TURN = FULL_TURN / 360
-    POWER = 50
-    LIFT_POWER = 30
+    POWER = 75
     KP = 3
 
     # Junction types
@@ -177,9 +176,9 @@ class RobotLibrary(object):
         print('IR Reading: ', sens2)
 
         if sens2 > 180:
-            return True
+            return 1
         else:
-            return False
+            return 0
 
     def magnet(self):
 
@@ -192,35 +191,36 @@ class RobotLibrary(object):
         print('Magnet Reading: ', magnet)
 
         if magnet < self.MRI_THRESHOLD:
-            return True
+            return 1
         else:
-            return False
+            return 0
 
     def stop(self):
         BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
-                         self.ULTRASONIC_MOTOR + self.ARM_MOTOR, 0)
+                         self.ULTRASONIC_MOTOR, 0)
 
     def reset_encoder(self, motor):
 
-        BP.offset_motor_encoder(motor, .get_motor_encoder(motor))
+        BP.offset_motor_encoder(motor, \
+                                BP.get_motor_encoder(motor))
 
     def drive_dist(self, num_blocks, block_size):
 
         # This function drives the robot at the input speed for the input
         # distance
 
-        if block_size < 0:
-            direction = -1
-        else:
-            direction = 1
-
-        block_size = abs(block_size)
-
         targetDist = .5 * block_size
 
         print('Traveling %f blocks.' % num_blocks)
 
         distance = float(num_blocks) * block_size
+
+        if distance < 0:
+            direction = -1
+        else:
+            direction = 1
+
+        distance = abs(distance)
 
         self.reset_encoder(self.LEFT_MOTOR)
         self.reset_encoder(self.RIGHT_MOTOR)
@@ -334,7 +334,6 @@ class RobotLibrary(object):
         self.turn_ultrasonic(self.LEFT)
         self.turn_ultrasonic(self.LEFT)
 
-        numJunction = 0
         typeJunction = self.JUNCT_DEAD_END
 
         if forwardDist > unit:
@@ -347,10 +346,10 @@ class RobotLibrary(object):
         return typeJunction
 
     def explore_space(self, block_size, mapMatrix, direction, positionX, \
-    positionY):
+                      positionY):
         junction = self.check_junction(block_size)
-        while junction < self.JUNCT_DEAD_END:
-            while junction == self.JUNCT_STRAIGHT:
+        while junction < self.JUNCT_DEAD_END
+            while junction = self.JUNCT_STRAIGHT:
                 self.drive_dist(1, block_size)
                 mapMatrix[positionY[positionX]] = 1
                 positionX, positionY = self.change_position()
@@ -359,6 +358,7 @@ class RobotLibrary(object):
             junction = self.check_map(junction, mapMatrix, direction, \
             positionX, positionY)
             direction, junction = self.turn_junction(junction, direction)
+            numJunction = (junction / 100) + ((junction % 100) / 10) + (junction )
 
 
         return mapMatrix, direction, positionX, positionY
@@ -574,9 +574,9 @@ class RobotLibrary(object):
 
     def set_motor(self, motor, deg):
         deg_diff = 6
-        while deg_diff > 2:
+        while deg_diff > 5:
             deg_diff = abs(BP.get_motor_encoder(self.ARM_MOTOR) - deg)
-            BP.set_motor_position(self.ARM_MOTOR, 130)
+            BP.set_motor_position(self.ARM_MOTOR, deg)
 
     def fix_arm(self):
         self.reset_encoder(self.ARM_MOTOR)
@@ -585,7 +585,7 @@ class RobotLibrary(object):
     def mass(self, time):
 
         # time in s
-        torque = ((.785 / time) - 165) / (-.4539 * .01 * self.LIFT_POWER) #N * m
+        torque = ((.785 / time) - 165) / -.4539 # N * m
         grav = 9.8 # m/s^2
         height = 5.5 # cm
         angle = 45 # degrees
@@ -602,23 +602,28 @@ class RobotLibrary(object):
 
         scan = self.scanner()
         if scan != self.WALL_COLOR:
-            self.drive_dist(1, -5) # cm
+            self.drive_dist(1, -10) # cm
             self.turn(self.LEFT, 180)
             self.stop()
+            print('turn complete')
             # lower the motor
             self.set_motor(self.ARM_MOTOR, 0)
 
             # drive towards resource
-            self.drive_dist(1, -10) # cm
+            self.drive_dist(1, -15) # cm
             self.stop()
+            print('driving to it')
+            initial_time = time.time()
             # lift resource and keep track of time elapsed
             initial_time = time.time()
-            BP.set_motor_power(self.ARM_MOTOR, self.LIFT_POWER)
+            BP.set_motor_power(self.ARM_MOTOR, 50)
             while BP.get_motor_encoder(self.ARM_MOTOR) != 45:
                 timer = time.time() - initial_time
             self.stop()
 
             mass = self.mass(timer)
+
+            print('time: ', timer)
 
             # set the resource back down
             self.set_motor(self.ARM_MOTOR, 0)
@@ -634,22 +639,6 @@ class RobotLibrary(object):
             self.turn(0,180)
 
         return mass
-
-    def avoid(self, currentX, currentY):
-
-        # Avoids Cesium and MRI and marks their position
-
-        mri_detected = self.magnet()
-        cesium_detected = self.ir_read()
-
-        if mri_detected or cesium_detected:
-            self.stop()
-            if direction == self.UP:
-                currentX += currentX
-            if mri_detected:
-                '''mark next block as mri'''
-            else:
-                '''mark next block as cesium'''
 
     def kill(self):
 
