@@ -366,7 +366,8 @@ class RobotLibrary(object):
             while junction = self.JUNCT_STRAIGHT:
                 self.drive_dist(1, block_size)
                 mapMatrix[positionY[positionX]] = 1
-                positionX, positionY = self.change_position(direction, positionX, positionY)
+                positionX, positionY = self.change_position(direction, \
+                positionX, positionY)
                 pastX.append(positionX)
                 pastY.append(positionY)
                 junction = self.check_junction(block_size)
@@ -384,11 +385,12 @@ class RobotLibrary(object):
                 if (numJunction == -1):
                     numJunction = 1
                 mapMatrix[positionY[positionX]] = numJunction
-                positionX, positionY = self.change_position(direction, positionX, positionY)
+                positionX, positionY = self.change_position(direction, \
+                positionX, positionY)
                 pastX.append(positionX)
                 pastY.append(positionY)
 
-        return mapMatrix, direction, positionX, positionY
+        return direction, positionX, positionY
 
     def change_position(self, direction, positionX, positionY):
         if (direction == self.LEFT):

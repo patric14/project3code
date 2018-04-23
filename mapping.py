@@ -42,15 +42,12 @@ explore_space = False
 
 map_number, block_size, unit, origin, notes = setup()
 
-mapBlockX = mapLengthX / unit_length
-mapBlockY = mapLengthY / unit_length
+mapBlockX = mapLengthX / unit_length + 2
+mapBlockY = mapLengthY / unit_length + 2
 
-map = robot.mapSetup(mapBlockX, mapBlockY)
+mapMatrix = robot.mapSetup(mapBlockX, mapBlockY)
 
-while explore_space == False:
-    junction = check_junction(unit)
-    explore_space =
-    robot.drive_dist(1, targetDist, block_size)
-    robot.turn_junction(block_size)
+direction, positionX, positionY = robot.explore_space(block_size, mapMatrix, \
+direction, positionX, positionY)
 
 map_output(map_number, unit_length, unit, origin, notes)
