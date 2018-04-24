@@ -40,13 +40,14 @@ mapLengthY = 12 * IN2FT * IN2CM #cm
 fully_mapped = False
 explore_space = False
 
-#map_number, block_size, unit, origin, notes = robot.setup()
-
+map_number, block_size, unit, origin, notes = robot.setup()
+'''
 map_number = 1
-block_size = 30
+block_size = 30.5
 unit = 'cm'
 origin = [5, 5]
 notes = 'notes'
+'''
 
 
 resources = robot.resourceInfo()
@@ -54,36 +55,23 @@ resources = robot.resourceInfo()
 mapBlockX = int(mapLengthX / block_size + 2)
 mapBlockY = int(mapLengthY / block_size + 2)
 
-positionX = origin[0]
-positionY = origin[1]
+positionX = int(origin[0])
+positionY = int(origin[1])
 
 mapMatrix = robot.mapSetup(mapBlockX, mapBlockY)
 
 direction = robot.UP
 
 try:
-    robot.reset_encoder(robot.ULTRASONIC)
-    direction, positionX, positionY = robot.explore_space_simple(block_size, mapMatrix, direction, positionX,  positionY)
 
-    openY = 0
-    openX = 0
-    for i in range(len(mapMatrix)):
-        current1 = mapMatrix[i]
-        for j in range(len(current1)):
-            current2 = current1[j]
-            if (current2 == 6):
-                openY = current1
-                openX = current2
-                current1 = len(mapMatrix)
-                current2 = len(current1)
+    direction, positionX, positionY, pastX, pastY = robot.explore_space_simple(block_size, mapMatrix, direction, positionX, positionY)
 
-    if (openY != 0):
-        robot.return_open_space()
+    direction, positionX, positionY = robot.explore_open(block_size, mapMatrix, direction, positionX, positionY, pastX, pastY)
     robot.map_output(map_number, block_size, unit, origin, notes)
 except KeyboardInterrupt:
     print('Program Interrupted')
-'''except:
-    print('Error')'''
+except:
+    print('Error')
 
 robot.map_output(map_number, block_size, unit, origin, notes, mapMatrix)
 robot.resource_output(resources, map_number, notes)

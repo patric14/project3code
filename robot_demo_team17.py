@@ -43,9 +43,9 @@ imu = MPU9250()
 # Library class
 class RobotLibrary(object):
 
-  # Constants
+    # Constants
 
-  TEAM = 17
+    TEAM = 17
 
     # Mapping Constants
     PATH = 1
@@ -68,7 +68,8 @@ class RobotLibrary(object):
     WHEEL_RADIUS = 1.97
     TRACK_SEPARATION = 18
     ULTRASONIC = 2
-    ULTRASONIC_RIGHT = 170
+    ULTRASONIC_RIGHT = 165
+    ULTRASONIC_LEFT = 165
     SCANTARGET = 5
 
     # Direction
@@ -83,8 +84,8 @@ class RobotLibrary(object):
     BIOHAZARD_COLOR = 'Biohazard' # Yellow
     NONHAZARD_COLOR = 'Nonhazardous' # Blues
     WALL_COLOR = 'Wall' # White
-    HAZARD_THRESHOLD = 2700
-    WALL_THRESHOLD = 2400
+    HAZARD_THRESHOLD = 2800
+    WALL_THRESHOLD = 2500
     CESIUM_THRESHOLD = 180
     MRI_THRESHOLD = -39
     DIST_DEG = (2 * pi * WHEEL_RADIUS) / 360
@@ -112,129 +113,129 @@ class RobotLibrary(object):
     # Functions
 
     def voltage(self):
-      voltage = BP.get_voltage_battery()
-      print('Battery Voltage: ', voltage)
-      return voltage
+        voltage = BP.get_voltage_battery()
+        print('Battery Voltage: ', voltage)
+        return voltage
 
     def getval(self, string):
-      val = float(input(string))
-      return val
+        val = float(input(string))
+        return val
 
     def setup(self):
-      # This function sets up all the bad bois
+        # This function sets up all the bad bois
 
-      origin = []
-      map_number = self.getval('Input map: ')
-      block_size = self.getval('Input unit length: ')
-      unit = input('Input unit: ')
-      origin.append(self.getval('Input x origin coordinate: '))
-      origin.append(self.getval('Input y origin coordinate: '))
-      notes = input('Notes: ')
+        origin = []
+        map_number = self.getval('Input map: ')
+        block_size = self.getval('Input unit length: ')
+        unit = input('Input unit: ')
+        origin.append(self.getval('Input x origin coordinate: '))
+        origin.append(self.getval('Input y origin coordinate: '))
+        notes = input('Notes: ')
 
         return map_number, block_size, unit, origin, notes
 
     def mapSetup(self, xSize, ySize):
 
-      # This function sets up the map matrix
+        # This function sets up the map matrix
 
-      mapMatrix = [[0 for col in range(ySize)] for row in range(xSize)]
+        mapMatrix = [[0 for col in range(ySize)] for row in range(xSize)]
 
         return mapMatrix
 
     def resourceInfo(self):
 
-      # This function creates an array to store resource location and
-      # information
+        # This function creates an array to store resource location and
+        # information
 
-      header = []
-      header.append('Parameter of interest')
-      header.append('Parameter')
-      header.append('Resource X Coordinate')
-      header.append('Resource Y Coordinate')
-      biohazard = []
-      biohazard.append('Biohazard')
-      biohazard.append('Mass(g)')
-      for i in range(1, 3):
-        biohazard.append(0)
+        header = []
+        header.append('Parameter of interest')
+        header.append('Parameter')
+        header.append('Resource X Coordinate')
+        header.append('Resource Y Coordinate')
+        biohazard = []
+        biohazard.append('Biohazard')
+        biohazard.append('Mass(g)')
+        for i in range(1, 3):
+            biohazard.append(0)
         cesium = []
         cesium.append('Cesium-137')
         cesium.append('Radiation Strength (W)')
         for i in range(1, 3):
-          cesium.append(0)
+            cesium.append(0)
         nonHazardous = []
         nonHazardous.append('Non-Hazardous Waste')
         nonHazardous.append('Mass (g)')
         for i in range(1, 3):
-          nonHazardous.append(0)
+            nonHazardous.append(0)
 
         resources = [header, biohazard, cesium, nonHazardous]
 
-            return resources
+        return resources
 
     def button(self):
 
-      # This function waits for the touch sensor to be pressed before the
-      # next code section is executed.
+        # This function waits for the touch sensor to be pressed before the
+        # next code section is executed.
 
-      trigger = 0
+        trigger = 0
         print('Press touch sensor to start')
 
         while trigger == 0:
-          try:
-            trigger = BP.get_sensor(self.BUTTON)
+            try:
+                trigger = BP.get_sensor(self.BUTTON)
             except brickpi3.SensorError as error:
-              print(error)
+                print(error)
 
     def scanner(self):
 
-      # This function uses the light sensor to determine which type of waste
-      # it is looking at
+        # This function uses the light sensor to determine which type of waste
+        # it is looking at
 
-      scan = BP.get_sensor(self.LIGHT)
-      print('Sensor value: ', scan)
-      if scan > self.HAZARD_THRESHOLD:
-        return self.NONHAZARD_COLOR
+        scan = BP.get_sensor(self.LIGHT)
+        print('Sensor value: ', scan)
+        if scan > self.HAZARD_THRESHOLD:
+            return self.NONHAZARD_COLOR
         elif scan < self.WALL_THRESHOLD:
-          return self.WALL_COLOR
+            return self.WALL_COLOR
         else:
-          return self.BIOHAZARD_COLOR
+            return self.BIOHAZARD_COLOR
 
     def ir_read(self):
 
-      # This function reads the IR sensor data
+        # This function reads the IR sensor data
 
-      [sens1, sens2] = ir.IR_Read(grovepi)
+        [sens1, sens2] = ir.IR_Read(grovepi)
 
-      print('IR Reading: ', sens2)
+        print('IR Reading: ', sens2)
 
         if sens2 > 180:
-          return True
+            return True
         else:
-          return False
+            return False
 
     def magnet(self):
 
-      # This function returns the magnetic sensor value
+        # This function returns the magnetic sensor value
 
-      raw = imu.readMagnet()
+        raw = imu.readMagnet()
 
-      magnet = raw['y']
+        magnet = raw['y']
 
         print('Magnet Reading: ', magnet)
 
         if magnet < self.MRI_THRESHOLD:
-          return True
+            return True
         else:
-          return False
+            return False
 
     def stop(self):
-      BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
-                       self.ULTRASONIC_MOTOR, 0)
+        BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
+                         self.ULTRASONIC_MOTOR, 0)
 
     def reset_encoder(self, motor):
 
-      BP.offset_motor_encoder(motor, \
-                              BP.get_motor_encoder(motor))
+        BP.offset_motor_encoder(motor, \
+                                BP.get_motor_encoder(motor))
 
     def drive_dist(self, num_blocks, block_size):
 
@@ -266,10 +267,10 @@ class RobotLibrary(object):
 
         while distTotal < num_blocks * block_size:
 
-          left_power = direction * (self.POWER - correction)
-          right_power = direction * (self.POWER + correction)
+            left_power = direction * (self.POWER - correction)
+            right_power = direction * (self.POWER + correction)
 
-          BP.set_motor_power(self.LEFT_MOTOR, left_power)
+            BP.set_motor_power(self.LEFT_MOTOR, left_power)
             BP.set_motor_power(self.RIGHT_MOTOR, right_power)
 
             currentDist = self.check_distance()
@@ -319,7 +320,7 @@ class RobotLibrary(object):
             left_speed = -1 * self.POWER
             right_speed = self.POWER
         else:
-          left_speed = self.POWER
+            left_speed = self.POWER
             right_speed = -1 * self.POWER
         while deg_traveled < max_deg:
             BP.set_motor_power(self.LEFT_MOTOR, left_speed)
@@ -334,16 +335,15 @@ class RobotLibrary(object):
 
         if direction == self.LEFT:
             power = 50
-            move = self.ULTRASONIC_RIGHT
+            target = self.ULTRASONIC_LEFT
         elif direction == self.RIGHT:
             power = -50
-            move = self.ULTRASONIC_RIGHT + 70
-
+            target = self.ULTRASONIC_RIGHT
 
         self.reset_encoder(self.ULTRASONIC_MOTOR)
 
         diff = 0
-        while diff < move:
+        while diff < target:
             BP.set_motor_power(self.ULTRASONIC_MOTOR, power)
             diff = abs(BP.get_motor_encoder(self.ULTRASONIC_MOTOR))
             time.sleep(.01)
@@ -375,9 +375,9 @@ class RobotLibrary(object):
         typeJunction = self.JUNCT_DEAD_END
 
         if forwardDist > unit:
-          typeJunction = self.JUNCT_STRAIGHT + typeJunction
+            typeJunction = self.JUNCT_STRAIGHT + typeJunction
         if leftDist > unit:
-          typeJunction = self.JUNCT_LEFT + typeJunction
+            typeJunction = self.JUNCT_LEFT + typeJunction
         if rightDist > unit:
             typeJunction = self.JUNCT_RIGHT + typeJunction
 
@@ -388,14 +388,14 @@ class RobotLibrary(object):
         # This function turns the robot to the leftmost fork of a Junction
 
         typeJunction = junction
-        if (typeJunction == self.JUNCT_LEFT) or \
+        if (typeJunction == self.JUNCT_RIGHT) or \
         (typeJunction == self.JUNCT_LEFT_RIGHT) or \
-        (typeJunction == self.JUNCT_LEFT_STRAIGHT) or \
+        (typeJunction == self.JUNCT_RIGHT_STRAIGHT) or \
         (typeJunction == self.JUNCT_ALL_WAY):
-            self.turn(self.LEFT, 90)
-            direction = self.change_direction(direction, self.LEFT)
-        elif (typeJunction == self.JUNCT_RIGHT):
             self.turn(self.RIGHT, 90)
+            direction = self.change_direction(direction, self.LEFT)
+        elif (typeJunction == self.JUNCT_LEFT) or (typeJunction == self.JUNCT_LEFT_STRAIGHT):
+            self.turn(self.LEFT, 90)
             direction = self.change_direction(direction, self.RIGHT)
         elif typeJunction == self.JUNCT_DEAD_END:
             self.turn(self.LEFT, 180)
@@ -423,13 +423,13 @@ class RobotLibrary(object):
                 if (positionX != pastX[0]) or (positionY != pastY[0]):
                     mapMatrix[positionY][positionX] = 1
                 positionX, positionY = self.change_position(direction, \
-                                                            positionX, positionY)
-                                                            pastX.append(positionX)
-                                                            pastY.append(positionY)
-                                                            junction, openSpace = self.check_junction(block_size)
+                positionX, positionY)
+                pastX.append(positionX)
+                pastY.append(positionY)
+                junction, openSpace = self.check_junction(block_size)
 
             if (openSpace > 0):
-              mapMatrix[positionY][positionX] = openSpace
+                mapMatrix[positionY][positionX] = openSpace
             junction = self.check_map(junction, mapMatrix, direction, \
             positionX, positionY)
             direction, junction = self.turn_junction(junction, direction)
@@ -496,82 +496,100 @@ class RobotLibrary(object):
             pastJunction = junction
 
         mapMatrix[positionY][positionX] = 6
+        return direction, positionX, positionY, pastX, pastY
+
+    def explore_open(self, block_size, mapMatrix, direction, positionX, positionY, pastX, pastY):
+        self.drive_dist(-1,block_size)
+        positionX, positionY = self.change_position(direction, \
+        positionX, positionY)
+        self.turn(direction, 90)
+        direction = self.change_direction(direction, self.LEFT)
+        self.drive_dist(1, block_size)
+        junction = self.check_junction(block_size)
+        while (junction != self.JUNCT_ALL_WAY):
+            direction, junction = self.turn_junction(junction, direction)
+            self.drive_dist(1, block_size)
+            mapMatrix[positionY][positionX] = 1
+            positionX, positionY = self.change_position(direction, \
+            positionX, positionY)
+            pastX.append(positionX)
+            pastY.append(positionY)
+            junction = self.check_junction(block_size)
         return direction, positionX, positionY
-
-
+        # self.avoid(self, currentX, currentY, mapMatrix)
 
     def change_position(self, direction, positionX, positionY):
         if (direction == self.LEFT):
             positionX -= 1
         if (direction == self.RIGHT):
-          positionX += 1
+            positionX += 1
         if (direction == self.UP):
-          positionY += 1
+            positionY += 1
         if (direction == self.DOWN):
-          positionY -= 1
+            positionY -= 1
         return positionX, positionY
 
     def check_map(self, junction, mapMatrix, direction, positionX, positionY):
-      if (direction == self.LEFT):
-        forwardMap = mapMatrix[positionX - 1][positionY]
-        leftMap = mapMatrix[positionX][positionY - 1]
-        rightMap = mapMatrix[positionX][positionY + 1]
-          if (direction == self.UP):
+        if (direction == self.LEFT):
+            forwardMap = mapMatrix[positionX - 1][positionY]
+            leftMap = mapMatrix[positionX][positionY - 1]
+            rightMap = mapMatrix[positionX][positionY + 1]
+        if (direction == self.UP):
             forwardMap = mapMatrix[positionX][positionY + 1]
             leftMap = mapMatrix[positionX - 1][positionY]
             rightMap = mapMatrix[positionX + 1][positionY]
-            if (direction == self.RIGHT):
-              forwardMap = mapMatrix[positionX + 1][positionY]
-              leftMap = mapMatrix[positionX][positionY + 1]
-              rightMap = mapMatrix[positionX][positionY - 1]
-            if (direction == self.DOWN):
-              forwardMap = mapMatrix[positionX][positionY - 1]
-              leftMap = mapMatrix[positionX + 1][positionY]
-              rightMap = mapMatrix[positionX - 1][positionY]
+        if (direction == self.RIGHT):
+            forwardMap = mapMatrix[positionX + 1][positionY]
+            leftMap = mapMatrix[positionX][positionY + 1]
+            rightMap = mapMatrix[positionX][positionY - 1]
+        if (direction == self.DOWN):
+            forwardMap = mapMatrix[positionX][positionY - 1]
+            leftMap = mapMatrix[positionX + 1][positionY]
+            rightMap = mapMatrix[positionX - 1][positionY]
 
-            forwardMap = -1 * (forwardMap - 1)
-            leftMap = -1 * (leftMap - 1)
-            rightMap = -1 * (rightMap - 1)
+        forwardMap = -1 * (forwardMap - 1)
+        leftMap = -1 * (leftMap - 1)
+        rightMap = -1 * (rightMap - 1)
 
-            forwardJunct = (int(abs(junction)) % 100) % 10
-            leftJunct = (int(abs(junction)) % 100) / 10
-            rightJunct = int(abs(junction)) / 100
+        forwardJunct = (int(abs(junction)) % 100) % 10
+        leftJunct = (int(abs(junction)) % 100) / 10
+        rightJunct = int(abs(junction)) / 100
 
-            straight = int(forwardMap * forwardJunct)
-            left = int(leftMap * leftJunct)
-            right = int(rightMap * rightJunct)
+        straight = int(forwardMap * forwardJunct)
+        left = int(leftMap * leftJunct)
+        right = int(rightMap * rightJunct)
 
-            junction = -1 * (straight + (10 * left) + (100 * right))
+        junction = -1 * (straight + (10 * left) + (100 * right))
 
-    return junction
+        return junction
 
     def change_direction(self, direction, turnType):
-      if (direction == self.LEFT):
-        if (turnType == self.LEFT):
-          direction += 3
+        if (direction == self.LEFT):
+            if (turnType == self.LEFT):
+                direction += 3
             elif (turnType == self.RIGHT):
-              direction += 2
+                direction += 2
             elif (turnType == self.UTURN):
-              direction += 1
-      elif (direction == self.RIGHT):
-        if (turnType == self.LEFT):
-          direction += 1
+                direction += 1
+        elif (direction == self.RIGHT):
+            if (turnType == self.LEFT):
+                direction += 1
             elif (turnType == self.RIGHT):
-              direction += 2
+                direction += 2
             elif (turnType == self.UTURN):
-              direction -= 1
-      elif (direction == self.UP):
-        if (turnType == self.LEFT):
-          direction -= 2
+                direction -= 1
+        elif (direction == self.UP):
+            if (turnType == self.LEFT):
+                direction -= 2
             elif (turnType == self.RIGHT):
-              direction -= 1
+                direction -= 1
             elif (turnType == self.UTURN):
-              direction += 1
-      elif (direction == self.DOWN):
-        if (turnType == self.LEFT):
-          direction -= 2
+                direction += 1
+        elif (direction == self.DOWN):
+            if (turnType == self.LEFT):
+                direction -= 2
             elif (turnType == self.RIGHT):
-              direction -= 3
+                direction -= 3
             elif (turnType == self.UTURN):
                 direction -= 1
 
