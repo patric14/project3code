@@ -264,8 +264,9 @@ class RobotLibrary(object):
         correction = 0
         distTotal = 0
         previousDist = 0
+        condition = 0
 
-        while distTotal < num_blocks * block_size:
+        while distTotal < distance:
 
             left_power = direction * (self.POWER - correction)
             right_power = direction * (self.POWER + correction)
@@ -292,8 +293,11 @@ class RobotLibrary(object):
 
             error = distPerp - targetDist
 
-            if error > block_size:
+            if currentDist > block_size and angle < 1.57:
                 correction = 0
+                if condition = 0:
+                    distTotal += 0.5 * float(block_size) - (distance - distTotal)
+                    condition = 1
             else:
                 correction = self.KP * error
 
