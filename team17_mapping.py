@@ -41,11 +41,13 @@ fully_mapped = False
 explore_space = False
 
 #map_number, block_size, unit, origin, notes = robot.setup()
+
 map_number = 1
-block_size = 40
+block_size = 30
 unit = 'cm'
-origin = [0, 0]
+origin = [5, 5]
 notes = 'notes'
+
 
 resources = robot.resourceInfo()
 
@@ -60,8 +62,8 @@ mapMatrix = robot.mapSetup(mapBlockX, mapBlockY)
 direction = robot.UP
 
 try:
-
-    direction, positionX, positionY = robot.explore_space(block_size, mapMatrix, direction, positionX,  positionY)
+    robot.reset_encoder(robot.ULTRASONIC)
+    direction, positionX, positionY = robot.explore_space_simple(block_size, mapMatrix, direction, positionX,  positionY)
 
     openY = 0
     openX = 0

@@ -1,13 +1,12 @@
-import robot_team17
+import meme
 import time
 import brickpi3
-robot = robot_team17.RobotLibrary()
+robot = meme.RobotLibrary()
 BP = brickpi3.BrickPi3()
 
 try:
-    robot.fix_arm()
-    print('arm fixed')
-    print('Weight: ', robot.weigh())
+    robot.check_junction(30)
+
 except KeyboardInterrupt:
     pass
 
