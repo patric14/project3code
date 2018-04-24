@@ -5,9 +5,8 @@ robot = robot_team17.RobotLibrary()
 BP = brickpi3.BrickPi3()
 
 try:
-    robot.fix_arm()
-    print('arm fixed')
-    print('Weight: ', robot.weigh())
+    while True:
+        robot.drive_dist(1, 40)
 except KeyboardInterrupt:
     pass
 
