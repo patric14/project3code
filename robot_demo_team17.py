@@ -392,14 +392,14 @@ class RobotLibrary(object):
         # This function turns the robot to the leftmost fork of a Junction
 
         typeJunction = junction
-        if (typeJunction == self.JUNCT_RIGHT) or \
+        if (typeJunction == self.JUNCT_LEFT) or \
         (typeJunction == self.JUNCT_LEFT_RIGHT) or \
-        (typeJunction == self.JUNCT_RIGHT_STRAIGHT) or \
+        (typeJunction == self.JUNCT_LEFT_STRAIGHT) or \
         (typeJunction == self.JUNCT_ALL_WAY):
-            self.turn(self.RIGHT, 90)
-            direction = self.change_direction(direction, self.LEFT)
-        elif (typeJunction == self.JUNCT_LEFT) or (typeJunction == self.JUNCT_LEFT_STRAIGHT):
             self.turn(self.LEFT, 90)
+            direction = self.change_direction(direction, self.LEFT)
+        elif (typeJunction == self.JUNCT_RIGHT):
+            self.turn(self.RIGHT, 90)
             direction = self.change_direction(direction, self.RIGHT)
         elif typeJunction == self.JUNCT_DEAD_END:
             self.turn(self.LEFT, 180)
