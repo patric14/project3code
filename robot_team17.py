@@ -428,10 +428,10 @@ class RobotLibrary(object):
                 if (positionX != pastX[0]) or (positionY != pastY[0]):
                     mapMatrix[positionY][positionX] = 1
                 positionX, positionY = self.change_position(direction, \
-                                                            positionX, positionY)
-                                                            pastX.append(positionX)
-                                                            pastY.append(positionY)
-                                                            junction, openSpace = self.check_junction(block_size)
+                positionX, positionY)
+                pastX.append(positionX)
+                pastY.append(positionY)
+                junction, openSpace = self.check_junction(block_size)
 
             if (openSpace > 0):
               mapMatrix[positionY][positionX] = openSpace
