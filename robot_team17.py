@@ -205,9 +205,9 @@ class RobotLibrary(object):
 
       [sens1, sens2] = ir.IR_Read(grovepi)
 
-      print('IR Reading: ', sens2)
+      print('IR Reading: ', sens1)
 
-        if sens2 > 180:
+        if sens1 > 240:
           return True
         else:
           return False
@@ -228,10 +228,15 @@ class RobotLibrary(object):
           return False
 
     def stop(self):
+
+        # Stops all motor movement
+
       BP.set_motor_dps(self.LEFT_MOTOR + self.RIGHT_MOTOR + \
                        self.ULTRASONIC_MOTOR, 0)
 
     def reset_encoder(self, motor):
+
+        # Resets motor encoder values
 
       BP.offset_motor_encoder(motor, \
                               BP.get_motor_encoder(motor))
