@@ -250,7 +250,7 @@ class RobotLibrary(object):
         num_blocks = abs(num_blocks)
         block_size = abs(block_size)
 
-        targetDist = .5 * float(block_size)
+        targetDist = .3 * float(block_size)
 
         print('Traveling %f blocks.' % num_blocks)
 
